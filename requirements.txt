@@ -1,0 +1,29 @@
+# Discord bot framework
+discord.py>=2.0.0
+
+# Google Gemini API
+google-generativeai
+
+# Gestione variabili ambiente
+python-dotenv
+
+# Dashboard web
+flask
+
+# Sintesi vocale (TTS)
+gtts
+
+# HTTP requests
+requests
+
+# PDF reading (PyMuPDF)
+PyMuPDF
+
+# DOCX reading
+python-docx
+
+# ODT reading
+odfpy
+
+# HTML parsing
+beautifulsoup4

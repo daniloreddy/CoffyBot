@@ -1,0 +1,14 @@
+[Unit]
+Description=Chatty Bot Service
+After=network.target
+
+[Service]
+User=danilo
+Group=danilo
+WorkingDirectory=/redberry/chatty.v2/bot
+ExecStart=/redberry/chatty.v2/bot/chatty.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
