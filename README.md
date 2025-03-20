@@ -110,5 +110,5 @@ MIT License - Free to use & customize.
 
 ---
 
-> Made with ☕ by TUO_USERNAME - Powered by voglia di spaccare su Discord.  
+> Made with ☕ by ChatGPT - Powered by voglia di spaccare su Discord.  
 > **DAJEEE!**
