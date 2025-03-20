@@ -16,6 +16,7 @@ from docx import Document
 from odf.opendocument import load
 from odf.text import P
 from datetime import datetime, timedelta
+from lang_manager import t
 
 # Load environment variables
 load_dotenv()
@@ -29,12 +30,12 @@ async def check_admin(interaction, fallback_id: int = FALLBACK_ID) -> bool:
         if any(role.name in ADMIN_ROLES for role in interaction.user.roles):
             return True
     except AttributeError:
-        logging.warning("⚠️ Cannot access user roles. Using fallback ID.")
+        logging.warning(t("admin_role_fallback"))
 
     if interaction.user.id == fallback_id:
         return True
 
-    await interaction.response.send_message("⛔ Only admin can use this command.", ephemeral=True)
+    await interaction.response.send_message(t("admin_only_command"), ephemeral=True)
     return False
 
 # --- Wikipedia ---
@@ -50,9 +51,9 @@ def search_wikipedia(term):
             image = data.get("thumbnail", {}).get("source")
             return title, extract, link, image
         else:
-            return None, "❌ No entry found.", "", None
+            return None, t("wiki_no_entry"), "", None
     except Exception as e:
-        return None, f"❌ Wikipedia error: {e}", "", None
+        return None, t("wiki_error", error=e), "", None
 
 # --- Weather ---
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
@@ -71,7 +72,6 @@ WEATHER_EMOJIS = {
 def get_weather(city, date=None):
     try:
         if date is None or date == datetime.now().date():
-            # Current weather
             url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}&units=metric&lang=it"
             response = requests.get(url)
             if response.status_code == 200:
@@ -85,26 +85,25 @@ def get_weather(city, date=None):
                 emoji = WEATHER_EMOJIS.get(condition, "🌍")
                 return f"📍 {city.title()}, {country} {emoji}\n🌡️ {temp} °C | {description}\n💧 Humidity: {humidity}% | 🌬️ Wind: {wind} m/s"
             else:
-                return "❌ City not found or API error."
+                return t("weather_city_not_found")
         else:
-            # Future forecast
             url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={OPENWEATHER_API_KEY}&units=metric&lang=it"
             response = requests.get(url)
             if response.status_code != 200:
-                return "❌ City not found or API error."
+                return t("weather_city_not_found")
 
             forecast_data = response.json()
             selected_forecast = None
 
             for entry in forecast_data["list"]:
-                dt_txt = entry["dt_txt"]  # format: "2025-03-22 15:00:00"
+                dt_txt = entry["dt_txt"]
                 dt_obj = datetime.strptime(dt_txt, "%Y-%m-%d %H:%M:%S")
                 if dt_obj.date() == date and dt_obj.hour == 12:
                     selected_forecast = entry
                     break
 
             if not selected_forecast:
-                return f"⚠️ No forecast found for {date.strftime('%d-%m-%Y')}."
+                return t("weather_no_forecast", date=date.strftime('%d-%m-%Y'))
 
             temp = selected_forecast['main']['temp']
             description = selected_forecast['weather'][0]['description'].capitalize()
@@ -117,7 +116,7 @@ def get_weather(city, date=None):
             return f"📍 {city.title()}, {country} {emoji} - {date.strftime('%d-%m-%Y')}\n🌡️ {temp} °C | {description}\n💧 Humidity: {humidity}% | 🌬️ Wind: {wind} m/s"
 
     except Exception as e:
-        return f"❌ Weather error: {e}"
+        return t("weather_error", error=e)
 
 # --- Google TTS ---
 def generate_tts_audio(text, language="it"):
@@ -127,7 +126,7 @@ def generate_tts_audio(text, language="it"):
             tts.save(fp.name)
             return fp.name
     except Exception as e:
-        print(f"TTS Error: {e}")
+        print(t("tts_error_log", error=e))
         return None
 
 # --- Image Generation ---
@@ -144,16 +143,16 @@ def generate_image(prompt):
                 fp.write(response.content)
                 return fp.name
         elif response.status_code == 503:
-            print("❌ Model is loading. Try again shortly.")
+            print(t("image_model_loading"))
             return "loading"
         elif response.status_code == 429:
-            print("❌ Hugging Face usage limit reached.")
+            print(t("image_limit_reached"))
             return "limit"
         else:
-            print(f"Hugging Face API error: {response.status_code} - {response.text}")
+            print(t("image_api_error_log", status=response.status_code, text=response.text))
             return None
     except Exception as e:
-        print(f"Image generation error: {e}")
+        print(t("image_error_log", error=e))
         return None
 
 # --- Read Attached File Content ---
@@ -165,7 +164,7 @@ async def read_file_content(attachment):
                 file_bytes = await attachment.read()
                 return file_bytes.decode("utf-8", errors="ignore")
             else:
-                return f"⚠️ File '{filename}' is too large. Max 20KB."
+                return t("file_too_large_small", filename=filename)
 
         elif filename.endswith(".html"):
             if attachment.size <= 20480:
@@ -173,16 +172,16 @@ async def read_file_content(attachment):
                 soup = BeautifulSoup(file_bytes, "html.parser")
                 return soup.get_text()
             else:
-                return f"⚠️ HTML file '{filename}' is too large. Max 20KB."
+                return t("file_too_large_small", filename=filename)
 
         elif filename.endswith(".pdf"):
             if attachment.size <= 1048576:
                 file_bytes = await attachment.read()
                 with fitz.open(stream=file_bytes, filetype="pdf") as doc:
                     text = "".join([page.get_text() for page in doc])
-                    return text[:5000]  # Safety limit
+                    return text[:5000]
             else:
-                return f"⚠️ PDF '{filename}' is too large. Max 1MB."
+                return t("file_too_large_pdf", filename=filename)
 
         elif filename.endswith(".docx"):
             file_bytes = await attachment.read()
@@ -197,7 +196,7 @@ async def read_file_content(attachment):
             return text[:5000]
 
         else:
-            return f"❌ File format '{filename}' not supported."
+            return t("file_format_not_supported", filename=filename)
 
     except Exception as e:
-        return f"❌ File reading error: {e}"
+        return t("file_reading_error", error=e)

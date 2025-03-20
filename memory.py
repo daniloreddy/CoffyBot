@@ -1,7 +1,10 @@
+# packages
 import json
 import os
 import time
+# namespaces
 from collections import deque
+from lang_manager import t 
 
 MEMORY_FILE = "memory.json"
 MEMORY_TIMEOUT = 600
@@ -32,6 +35,6 @@ def update_memory(user_id, question, now):
 
     prompt = ""
     for exchange in user_memory[user_id]["exchanges"]:
-        prompt += f"User: {exchange['question']}\nCoffy: {exchange['answer']}\n"
-    prompt += f"User: {question}\nCoffy:"
+        prompt += f"{t('memory_user_label')}: {exchange['question']}\n{t('memory_bot_label')}: {exchange['answer']}\n"
+    prompt += f"{t('memory_user_label')}: {question}\n{t('memory_bot_label')}:"
     return prompt

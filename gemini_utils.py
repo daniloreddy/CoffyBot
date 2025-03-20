@@ -1,6 +1,10 @@
-import google.generativeai as genai
+# packages
 import os
+import google.generativeai as genai
+# namespaces
 from dotenv import load_dotenv
+from lang_manager import t
+
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -21,4 +25,5 @@ def get_gemini_response(prompt):
         response = model_instance.generate_content(prompt)
         return response.text
     except Exception as e:
-        return f"❌ Gemini error: {e}"
+        return t("gemini_error", error=e)
+

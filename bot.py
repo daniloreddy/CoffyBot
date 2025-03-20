@@ -18,6 +18,9 @@ from db_utils import log_to_sqlite
 from memory import user_memory, update_memory, save_memory_to_file
 from dashboard import start_dashboard
 from services_utils import search_wikipedia, get_weather, generate_tts_audio, generate_image, read_file_content, check_admin
+from lang_manager import detect_system_language, load_language, t
+
+load_language(detect_system_language())
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -37,26 +40,26 @@ def handle_errors(command_name: str):
             try:
                 await func(interaction, *args, **kwargs)
             except Exception as e:
-                logging.error(f"❌ Error in command {command_name}: {e}")
+                logging.error(t("command_error_log", command=command_name, error=e))
                 try:
                     if interaction.response.is_done():
-                        await interaction.followup.send("❗ An error occurred. Please try again later.")
+                        await interaction.followup.send(t("generic_error"))
                     else:
-                        await interaction.response.send_message("❗ An error occurred. Please try again later.", ephemeral=True)
+                        await interaction.response.send_message(t("generic_error"), ephemeral=True)
                 except Exception as inner_err:
-                    logging.error(f"⚠️ Error handling the error response: {inner_err}")
+                    logging.error(t("error_handling_failed", error=inner_err))
         return wrapper
     return decorator
 
 @bot.event
 async def on_ready():
     from gemini_utils import MODEL
-    logging.info(f"🤖 Bot {bot.user} is online! Model: {MODEL}")
+    logging.info(t("bot_online_log", bot=bot.user, model=MODEL))
     try:
         synced = await bot.tree.sync()
-        logging.info(f"✅ Slash commands synced: {len(synced)}")
+        logging.info(t("commands_synced_log", count=len(synced)))
     except Exception as e:
-        logging.error(f"❌ Error syncing commands: {e}")
+        logging.error(t("sync_error_log", error=e))
 
 # /chatty-wiki
 @bot.tree.command(name="chatty-wiki", description="Search for a term on Wikipedia")
@@ -103,7 +106,7 @@ async def weather_command(interaction: discord.Interaction, citta: str, giorno: 
             else:
                 raise ValueError
         except Exception:
-            await interaction.followup.send("❗ Invalid date. Use 'oggi', 'domani', 'dopodomani' or formats '2025-03-22' or '22-03-2025'.")
+            await interaction.followup.send(t("invalid_date"))
             return
 
     weather_response = get_weather(citta, requested_date.date())
@@ -115,7 +118,7 @@ async def weather_command(interaction: discord.Interaction, citta: str, giorno: 
 @handle_errors("chatty-tts")
 async def tts_command(interaction: discord.Interaction, testo: str):
     if not testo.strip():
-        await interaction.response.send_message("❗ Please enter some text.", ephemeral=True)
+        await interaction.response.send_message(t("tts_no_text"), ephemeral=True)
         return
 
     await interaction.response.defer()
@@ -124,7 +127,7 @@ async def tts_command(interaction: discord.Interaction, testo: str):
         await interaction.followup.send(file=discord.File(audio_file))
         os.remove(audio_file)
     else:
-        await interaction.followup.send("❌ Error generating audio.")
+        await interaction.followup.send(t("tts_error"))
 
 # /chatty-image
 @bot.tree.command(name="chatty-image", description="Generate an image from a prompt")
@@ -132,21 +135,21 @@ async def tts_command(interaction: discord.Interaction, testo: str):
 @handle_errors("chatty-image")
 async def image_command(interaction: discord.Interaction, prompt: str):
     if not prompt.strip():
-        await interaction.response.send_message("❗ Please enter a prompt.", ephemeral=True)
+        await interaction.response.send_message(t("image_no_prompt"), ephemeral=True)
         return
 
     await interaction.response.defer()
     image_file = generate_image(prompt)
 
     if image_file == "loading":
-        await interaction.followup.send("⏳ The model is loading. Try again in a few seconds.")
+        await interaction.followup.send(t("image_loading"))
     elif image_file == "limit":
-        await interaction.followup.send("⚠️ Daily image generation limit reached. Try again tomorrow!")
+        await interaction.followup.send(t("image_limit"))
     elif image_file:
         await interaction.followup.send(file=discord.File(image_file))
         os.remove(image_file)
     else:
-        await interaction.followup.send("❌ Error generating image.")
+        await interaction.followup.send(t("image_error"))
 
 # /chatty-reset
 @bot.tree.command(name="chatty-reset", description="Reset the chat memory with the bot")
@@ -157,7 +160,7 @@ async def reset_memory(interaction: discord.Interaction):
     user_id = interaction.user.id
     user_memory.pop(user_id, None)
 
-    await interaction.response.send_message("🧠 Memory reset!", ephemeral=False)
+    await interaction.response.send_message(t("memory_reset"), ephemeral=False)
     try:
         await interaction.channel.last_message.add_reaction("🧹")
     except Exception:
@@ -170,7 +173,7 @@ async def info(interaction: discord.Interaction):
     from gemini_utils import MODEL
     users_memorized = len(user_memory)
 
-    message_text = f"🤖 Active model: `{MODEL}`\n🧠 Users in memory: `{users_memorized}`"
+    message_text = t("info_message", model=MODEL, users=users_memorized)
     await interaction.response.send_message(message_text)
 
 # /chatty-model
@@ -183,9 +186,9 @@ async def model_switch(interaction: discord.Interaction, modello: str):
     ok = change_model(modello)
 
     if ok:
-        await interaction.response.send_message(f"✅ ⚙️ Model switched to: `{modello}`")
+        await interaction.response.send_message(t("model_switched", model=modello))
     else:
-        await interaction.response.send_message("❌ Invalid model.")
+        await interaction.response.send_message(t("invalid_model"))
 
 AVAILABLE_MODELS = ['gemini-1.5-flash', 'gemini-1.5-pro']
 @model_switch.autocomplete('modello')
@@ -199,17 +202,7 @@ async def autocomplete_models(interaction: discord.Interaction, current: str):
 # /chatty-help
 @bot.tree.command(name="chatty-help", description="Show the list of available commands")
 async def help_command(interaction: discord.Interaction):
-    message_text = (
-        "📖 **Available commands:**\n"
-        "/chatty ➜ Chat with Coffy (supports attachments)\n"
-        "/chatty-wiki ➜ Search Wikipedia\n"
-        "/chatty-meteo ➜ Show weather for a city\n"
-        "/chatty-tts ➜ Generate audio from text\n"
-        "/chatty-image ➜ Generate image from prompt\n"
-        "/chatty-reset ➜ Reset user memory\n"
-        "/chatty-info ➜ Show bot info and memory\n"
-        "/chatty-model ➜ Change Gemini model\n"
-    )
+    message_text = t("help_message")
     await interaction.response.send_message(message_text, ephemeral=True)
 
 # /chatty
@@ -231,7 +224,7 @@ async def chatty(interaction: discord.Interaction, prompt: str, allegato: Option
 
     final_prompt = prompt
     if attachment_texts:
-        final_prompt += "\n\nAttachment content:\n" + "\n".join(attachment_texts)
+        final_prompt += "\n\n" + t("attachment_content") + "\n" + "\n".join(attachment_texts)
 
     contextual_prompt = update_memory(user_id, final_prompt, now)
     response_text = get_gemini_response(contextual_prompt)
@@ -241,8 +234,8 @@ async def chatty(interaction: discord.Interaction, prompt: str, allegato: Option
     log_to_sqlite(interaction.user, interaction.channel, final_prompt, response_text)
 
     if len(response_text) <= 4096:
-        embed = discord.Embed(title="🤖 Coffy's Response", description=response_text, color=discord.Color.green())
-        embed.set_footer(text=f"Requested by {interaction.user.display_name}", icon_url=interaction.user.display_avatar.url)
+        embed = discord.Embed(title=t("response_title"), description=response_text, color=discord.Color.green())
+        embed.set_footer(text=t("response_footer", user=interaction.user.display_name), icon_url=interaction.user.display_avatar.url)
         await interaction.followup.send(embed=embed)
     else:
         await interaction.followup.send(response_text)
@@ -267,25 +260,21 @@ async def on_message(message):
             if message.author.id == FALLBACK_ID:
                 is_admin = True
 
-        status = "✅ You ARE admin." if is_admin else "⛔ You are NOT admin."
-        message_text = (
-            f"👑 **Authorized admin roles:** `{', '.join(ADMIN_ROLES)}`\n"
-            f"🆔 **Fallback User ID:** `{FALLBACK_ID}`\n\n"
-            f"{status}"
-        )
+        status = t("admin_status_yes") if is_admin else t("admin_status_no")
+        message_text = t("admin_debug_message", roles=", ".join(ADMIN_ROLES), fallback=FALLBACK_ID, status=status)
         await message.channel.send(message_text)
         return
 
     if bot.user in message.mentions:
-        await message.channel.send(f"Hi {message.author.mention}! 👋 Use slash commands to get started. Try `/help`!")
+        await message.channel.send(t("mention_help", user=message.author.mention))
 
     if re.search(r"(coffy|chatty)\s+sei\s+vivo", content):
         responses_list = [
-            "I’m alive and full of caffeine ☕⚡",
-            "More alive than ever, ready to generate images and answers!",
-            "Alive... in server RAM 💾👾",
-            "As long as there’s power, I’m operational! 🔋🤖",
-            "Calculating life, universe, and everything... 42!"
+            t("alive_response_1"),
+            t("alive_response_2"),
+            t("alive_response_3"),
+            t("alive_response_4"),
+            t("alive_response_5")
         ]
         response = random.choice(responses_list)
         await message.channel.send(f"{message.author.mention} {response}")
