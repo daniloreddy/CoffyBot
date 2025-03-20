@@ -2,3 +2,5 @@ chatty.db
 chatty.env
 chatty.env.bat
 memoria.json
+coffy-env/
+__pycache__/

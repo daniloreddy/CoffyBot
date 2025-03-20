@@ -41,6 +41,9 @@ cd coffybot
 # Crea ambiente virtuale
 python3 -m venv coffy-env
 source coffy-env/bin/activate
+# Windows
+python -m venv coffy-env
+call coffy-env\Scriptsbin\activate
 
 # Installa dipendenze
 pip install -r requirements.txt
