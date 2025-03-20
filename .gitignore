@@ -4,3 +4,4 @@ chatty.env.bat
 memoria.json
 coffy-env/
 __pycache__/
+.env
