@@ -35,7 +35,7 @@
 ## ⚙️ Installazione
 ```bash
 # Clona il progetto
-git clone https://github.com/TUO_USERNAME/coffybot.git
+git clone https://github.com/daniloreddy/coffybot.git
 cd coffybot
 
 # Crea ambiente virtuale
@@ -110,5 +110,5 @@ MIT License - Free to use & customize.
 
 ---
 
-> Made with ☕ by ChatGPT - Powered by voglia di spaccare su Discord.  
+> Made with ☕ by ChatGPT e daniloreddy - Powered by voglia di spaccare su Discord.  
 > **DAJEEE!**
