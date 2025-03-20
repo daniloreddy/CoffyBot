@@ -2,7 +2,7 @@ from flask import Flask, render_template_string, request
 import threading
 from db_utils import cursor
 from gemini_utils import MODEL
-from memory import memoria_utente
+from memory import user_memory
 import sqlite3
 
 app = Flask(__name__)
@@ -22,26 +22,26 @@ TEMPLATE = """
 </head>
 <body>
     <h1>📊 Coffy Dashboard</h1>
-    <p>Modello attivo: <strong>{{ model }}</strong></p>
-    <p>Utenti in memoria: {{ users }}</p>
-    <p>Totale conversazioni: {{ total_conversations }}</p>
+    <p>Active model: <strong>{{ model }}</strong></p>
+    <p>Users in memory: {{ users }}</p>
+    <p>Total conversations: {{ total_conversations }}</p>
 
-    <h2>📅 Attività giornaliera (ultimi 7 giorni)</h2>
+    <h2>📅 Daily activity (last 7 days)</h2>
     <ul>
-        {% for giorno, conteggio in attivita %}
-        <li>{{ giorno }}: {{ conteggio }} messaggi</li>
+        {% for day, count in activity %}
+        <li>{{ day }}: {{ count }} messages</li>
         {% endfor %}
     </ul>
 
-    <h2>🔍 Filtra conversazioni per utente</h2>
+    <h2>🔍 Filter conversations by user</h2>
     <form method="get" action="/">
-        <input type="text" name="utente" placeholder="Nome utente">
-        <button type="submit">Filtra</button>
+        <input type="text" name="user_filter" placeholder="Username">
+        <button type="submit">Filter</button>
     </form>
 
-    <h2>Ultime 10 conversazioni{% if filtro %} di {{ filtro }}{% endif %}</h2>
+    <h2>Last 10 conversations{% if user_filter %} by {{ user_filter }}{% endif %}</h2>
     <ul>
-        {% for row in conversazioni %}
+        {% for row in conversations %}
         <li><strong>{{ row[1] }}</strong> - {{ row[2] }}:<br><b>💬</b> {{ row[5] }}<br><b>🤖</b> {{ row[6] }}</li>
         {% endfor %}
     </ul>
@@ -51,22 +51,29 @@ TEMPLATE = """
 
 @app.route("/")
 def index():
-    filtro = request.args.get("utente")
+    user_filter = request.args.get("user_filter")
 
-    if filtro:
-        cursor.execute("SELECT * FROM conversazioni WHERE user = ? ORDER BY id DESC LIMIT 10", (filtro,))
+    if user_filter:
+        cursor.execute("SELECT * FROM conversations WHERE user = ? ORDER BY id DESC LIMIT 10", (user_filter,))
     else:
-        cursor.execute("SELECT * FROM conversazioni ORDER BY id DESC LIMIT 10")
-    conversazioni = cursor.fetchall()
+        cursor.execute("SELECT * FROM conversations ORDER BY id DESC LIMIT 10")
+    conversations = cursor.fetchall()
 
-    cursor.execute("SELECT COUNT(*) FROM conversazioni")
+    cursor.execute("SELECT COUNT(*) FROM conversations")
     total_conversations = cursor.fetchone()[0]
 
-    cursor.execute("SELECT DATE(timestamp) as giorno, COUNT(*) FROM conversazioni GROUP BY giorno ORDER BY giorno DESC LIMIT 7")
-    attivita = cursor.fetchall()
+    cursor.execute("SELECT DATE(timestamp) as day, COUNT(*) FROM conversations GROUP BY day ORDER BY day DESC LIMIT 7")
+    activity = cursor.fetchall()
 
-    return render_template_string(TEMPLATE, model=MODEL, users=len(memoria_utente), total_conversations=total_conversations, conversazioni=conversazioni, attivita=attivita, filtro=filtro)
+    return render_template_string(
+        TEMPLATE,
+        model=MODEL,
+        users=len(user_memory),
+        total_conversations=total_conversations,
+        conversations=conversations,
+        activity=activity,
+        user_filter=user_filter
+    )
 
 def start_dashboard():
     threading.Thread(target=lambda: app.run(host="0.0.0.0", port=5000)).start()
-
