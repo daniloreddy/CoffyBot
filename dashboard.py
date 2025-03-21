@@ -1,8 +1,8 @@
 from flask import Flask, render_template_string, request
 import threading
-from db_utils import cursor
-from gemini_utils import MODEL
-from memory import user_memory
+from utils.db_utils import cursor
+from services.gemini_service import MODEL
+from utils.memory import user_memory
 import sqlite3
 
 app = Flask(__name__)
@@ -75,5 +75,5 @@ def index():
         user_filter=user_filter
     )
 
-def start_dashboard():
-    threading.Thread(target=lambda: app.run(host="0.0.0.0", port=5000)).start()
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)

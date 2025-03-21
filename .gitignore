@@ -1,7 +1,7 @@
-chatty.db
-chatty.env
-chatty.env.bat
-memoria.json
+*.db
+mem*.json
+.env
+*.log
+logs
 coffy-env/
 __pycache__/
-.env

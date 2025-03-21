@@ -2,7 +2,7 @@ import sqlite3
 import os
 import sys
 
-from lang_manager import detect_system_language, load_language, t
+from utils.localization import detect_system_language, load_language, t
 
 load_language(detect_system_language())
 

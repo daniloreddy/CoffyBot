@@ -7,10 +7,11 @@ DEFAULT_LANG = "en"
 translations = {}
 language_cache = {}
 
+
 def detect_system_language():
     lang, _ = locale.getdefaultlocale()  # Example: ('it_IT', 'UTF-8')
     if lang:
-        return lang.split('_')[0].lower()  # → 'it'
+        return lang.split("_")[0].lower()  # → 'it'
     return "en"  # Default fallback
 
 
@@ -25,8 +26,8 @@ def load_language(lang_code):
         language_cache[lang_code] = translations
         return translations
 
+
 def t(key, lang="en", **kwargs):
     translations = load_language(lang)
     text = translations.get(key, f"[{key}]")
     return text.format(**kwargs)
-
