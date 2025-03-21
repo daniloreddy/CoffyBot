@@ -48,4 +48,4 @@ def get_gemini_response(prompt):
         return response.text
     except Exception as e:
         error_logger.error("Gemini API error: %s", str(e))
-        return t("gemini_error", error=e)
+        return None

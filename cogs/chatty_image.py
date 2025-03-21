@@ -1,12 +1,9 @@
-# libs
 import os
 import discord
 
-# names
 from discord.ext import commands
 from discord import app_commands
 
-# custom libs
 from services.hugging_face_service import generate_image
 from utils.localization import t
 from utils.generic import handle_errors

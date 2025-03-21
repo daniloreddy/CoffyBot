@@ -1,4 +1,5 @@
 import discord
+import os
 
 from discord.ext import commands
 from discord import app_commands
@@ -6,7 +7,8 @@ from discord import app_commands
 from utils.localization import t
 from utils.generic import handle_errors, check_admin
 from services.gemini_service import change_model
-from utils.logger import bot_logger, error_logger  # Add loggers
+from utils.logger import bot_logger, error_logger
+from utils.context import set_context_file, reset_context
 
 AVAILABLE_MODELS = ["gemini-1.5-flash", "gemini-1.5-pro"]
 
@@ -50,6 +52,76 @@ class ChattyAdmin(commands.Cog):
             if current.lower() in mod.lower()
         ]
         return suggestions[:5]
+
+    @app_commands.command(
+        name="chatty-context",
+        description="Set the context file for this server",
+    )
+    @app_commands.describe(filename="Name of the file in prompts/ (without .txt)")
+    @handle_errors("chatty-context")
+    async def chatty_context(self, interaction: discord.Interaction, filename: str):
+        if not await check_admin(interaction):
+            return
+
+        filename = filename.strip()
+        if not filename:
+            await interaction.response.send_message(
+                t("invalid_context_file"), ephemeral=True
+            )
+            return
+
+        if not filename.endswith(".txt"):
+            filename += ".txt"
+
+        if interaction.guild:
+            server_name = interaction.guild.name
+        else:
+            server_name = f"DM-{interaction.user.name}"
+
+        result = set_context_file(server_name, filename)
+
+        if result:
+            bot_logger.info(
+                "Context set to '%s' by %s (ID: %s)",
+                filename,
+                interaction.user.display_name,
+                interaction.user.id,
+            )
+            await interaction.response.send_message(
+                t("context_set", file=filename), ephemeral=True
+            )
+        else:
+            error_logger.warning(
+                "Invalid context file attempt by %s (ID: %s): %s",
+                interaction.user.display_name,
+                interaction.user.id,
+                filename,
+            )
+            await interaction.response.send_message(
+                t("invalid_context_file"), ephemeral=True
+            )
+
+    @app_commands.command(
+        name="chatty-context-reset",
+        description="Reset the context file for this server",
+    )
+    @handle_errors("chatty-context-reset")
+    async def chatty_context_reset(self, interaction: discord.Interaction):
+        if not await check_admin(interaction):
+            return
+
+        if interaction.guild:
+            server_name = interaction.guild.name
+        else:
+            server_name = f"DM-{interaction.user.name}"
+
+        reset_context(server_name)
+        bot_logger.info(
+            "Context reset by %s (ID: %s)",
+            interaction.user.display_name,
+            interaction.user.id,
+        )
+        await interaction.response.send_message(t("context_reset"), ephemeral=True)
 
 
 async def setup(bot):

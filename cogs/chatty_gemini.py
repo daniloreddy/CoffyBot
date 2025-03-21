@@ -1,19 +1,17 @@
-# libs
 import discord
 import time
 
-# names
 from discord.ext import commands
 from discord import app_commands
 from typing import Optional
 
-# custom libs
 from services.gemini_service import get_gemini_response
 from utils.localization import t
 from utils.memory import user_memory, update_memory
 from utils.db_utils import log_to_sqlite
 from utils.generic import read_file_content, handle_errors
 from utils.logger import bot_logger, error_logger  # Add loggers
+from utils.context import get_context_prompt
 
 
 class ChattyGemini(commands.Cog):
@@ -65,7 +63,24 @@ class ChattyGemini(commands.Cog):
         )
 
         contextual_prompt = update_memory(user_id, final_prompt, now)
-        response_text = get_gemini_response(contextual_prompt)
+
+        # --- Add server context (if any) ---
+        server_name = interaction.guild.name if interaction.guild else "DM"
+        context_prompt = get_context_prompt(server_name)
+
+        if context_prompt:
+            full_prompt = context_prompt.strip() + "\n\n" + contextual_prompt
+            bot_logger.info(
+                "Context applied for server '%s': %s", server_name, context_prompt[:100]
+            )
+        else:
+            full_prompt = contextual_prompt
+
+        response_text = get_gemini_response(full_prompt)
+
+        if response_text is None:
+            await interaction.followup.send(t("gemini_error"))
+            return
 
         user_memory[user_id]["exchanges"].append(
             {"question": final_prompt, "answer": response_text}

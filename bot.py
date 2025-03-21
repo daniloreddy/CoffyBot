@@ -5,6 +5,7 @@ import os
 import re
 import random
 import atexit
+import time
 
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -14,6 +15,7 @@ from utils.localization import detect_system_language, load_language, t
 from utils.logger import bot_logger, error_logger
 
 # === Init section ===
+BOT_START_TIME = time.time()
 load_dotenv()
 load_language(detect_system_language())
 
@@ -89,12 +91,13 @@ async def on_message(message):
 async def on_ready():
     from services.gemini_service import MODEL
 
-    bot_logger.info(t("bot_online_log", bot=bot.user, model=MODEL))
+    bot_logger.info("Bot %s is online! Model: %s", bot.user, MODEL)
+
     try:
         synced = await bot.tree.sync()
-        bot_logger.info(t("commands_synced_log", count=len(synced)))
+        bot_logger.info("Slash commands synced: %s", len(synced))
     except Exception as e:
-        error_logger.error(t("sync_error_log", error=e))
+        error_logger.error("Error syncing commands: %s", str(e))
 
 
 async def load_all_cogs():

@@ -1,4 +1,3 @@
-# packages
 import os
 import functools
 import logging
@@ -6,12 +5,12 @@ import discord
 import io
 import fitz  # PyMuPDF
 import logging
-# namespaces
+
 from bs4 import BeautifulSoup
 from docx import Document
 from odf.opendocument import load
 from odf.text import P
-# custom
+
 from utils.localization import t
 
 # --- Read Attached File Content ---
@@ -67,14 +66,14 @@ def handle_errors(command_name: str):
             try:
                 await func(interaction, *args, **kwargs)
             except Exception as e:
-                logging.error(t("command_error_log", command=command_name, error=e))
+                logging.error("Error in command %s: %s", command_name, str(e))
                 try:
                     if interaction.response.is_done():
                         await interaction.followup.send(t("generic_error"))
                     else:
                         await interaction.response.send_message(t("generic_error"), ephemeral=True)
                 except Exception as inner_err:
-                    logging.error(t("error_handling_failed", error=inner_err))
+                    logging.error("Error in command %s: %s", command_name, str(e))
         return wrapper
     return decorator
 

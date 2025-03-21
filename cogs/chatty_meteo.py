@@ -1,13 +1,10 @@
-# libs
 import discord
 
-# names
 from discord.ext import commands
 from discord import app_commands
 from datetime import datetime, timedelta
 from typing import Optional
 
-# custom libs
 from services.weather_service import get_weather
 from utils.localization import t
 from utils.generic import handle_errors

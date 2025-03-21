@@ -1,7 +1,7 @@
 import requests
 import os
 import tempfile
-from utils.logger import service_logger, error_logger  # Universal loggers
+from utils.logger import service_logger, error_logger
 
 # --- Image Generation ---
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
