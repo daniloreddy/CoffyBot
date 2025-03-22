@@ -1,0 +1,5 @@
+This directory contains all the context prompts that you can use to customize the behavior of the LLM model.
+
+The prompts must be placed in text files with a .txt extension
+
+One file per context.

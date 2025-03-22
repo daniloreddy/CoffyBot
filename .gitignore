@@ -1,9 +1,9 @@
 *.db
 .env
 *.log
-logs
+logs/*.log
 coffy-env/
 __pycache__/
 config/context.json
 config/memory.json
-prompts
+prompts/*.txt
