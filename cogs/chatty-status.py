@@ -7,7 +7,7 @@ from discord.ext import commands
 from utils.localization import t
 from utils.memory import user_memory, MEMORY_FILE
 from utils.generic import handle_errors
-from services.gemini_service import MODEL
+from services.gemini_service import get_current_model
 from utils.logger import bot_logger
 from utils.context import server_context
 from bot import BOT_START_TIME
@@ -27,7 +27,7 @@ class ChattyStatus(commands.Cog):
 
         context_file = server_context.get(server_name, "None")
 
-        # Calculate memory.json size
+        # Calculate memory size
         memory_size = 0
         try:
             memory_size = os.path.getsize(MEMORY_FILE)
@@ -53,11 +53,11 @@ class ChattyStatus(commands.Cog):
 
         message_text = t(
             "info_message",
-            model=MODEL,
+            model=get_current_model(),
             users=users_memorized,
             context=context_file,
             memsize=size_str,
-            uptime=uptime_str
+            uptime=uptime_str,
         )
 
         # --- LOG Info Request ---

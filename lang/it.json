@@ -25,7 +25,7 @@
   "info_message": "🤖 Modello attivo: {model}\n🧠 Utenti in memoria: {users}\n📂 File contesto: {context}\n💾 Dimensione memoria: {memsize}\n🕒 Uptime: {uptime}",
   "model_switched": "✅ ⚙️ Modello cambiato in: `{model}`",
   "invalid_model": "❌ Modello non valido.",
-  "help_message": "📖 **Comandi disponibili:**\n/chatty ➜ Chatta con Coffy (supporta allegati)\n/chatty-wiki ➜ Cerca su Wikipedia\n/chatty-meteo ➜ Mostra meteo per una città\n/chatty-tts ➜ Genera audio da testo\n/chatty-image ➜ Genera immagine da prompt\n/chatty-reset ➜ Resetta memoria utente\n/chatty-info ➜ Info bot e memoria\n/chatty-model ➜ Cambia modello Gemini\n",
+  "help_message": "📖 **Comandi disponibili:**\n/chatty ➜ Chatta con Coffy (supporta allegati)\n/chatty-wiki ➜ Cerca su Wikipedia\n/chatty-meteo ➜ Mostra il meteo di una città\n/chatty-tts ➜ Genera audio da testo\n/chatty-image ➜ Genera immagine da prompt\n/chatty-reset ➜ Resetta la tua memoria\n/chatty-info ➜ Mostra info del bot\n/chatty-help ➜ Mostra questo messaggio di aiuto",
   "attachment_content": "Contenuto allegato:",
   "response_title": "🤖 Risposta di Coffy",
   "response_footer": "Richiesto da {user}",
@@ -45,7 +45,15 @@
   "no_activity_dm": "⚠️ Nessuna attività trovata negli ultimi 7 giorni.",
   "no_conversations_dm": "⚠️ Nessuna conversazione trovata.",
   "last_conversations": "🗂️ Ultime 10 Conversazioni:\n{logs}",
-  "admin_help_message": "📖 **Comandi Admin Dashboard (solo DM)**\n/chatty-stats ➜ Mostra statistiche bot\n/chatty-activity ➜ Mostra attività giornaliera (ultimi 7 giorni)\n/chatty-lastlogs ➜ Mostra ultime 10 conversazioni\n",
+  "admin_help_message": "📖 **Comandi Amministrativi (solo DM)**\n/chatty-admin-model ➜ Cambia il modello Gemini attivo\n/chatty-admin-models ➜ Elenca tutti i modelli disponibili\n/chatty-admin-context ➜ Imposta il file di contesto per questo server\n/chatty-admin-context-reset ➜ Resetta il contesto per questo server\n/chatty-admin-contexts ➜ Elenca i file di contesto disponibili\n/chatty-admin-stats ➜ Mostra statistiche del bot\n/chatty-admin-activity ➜ Mostra attività giornaliera (ultimi 7 giorni)\n/chatty-admin-lastlogs ➜ Mostra le ultime 10 conversazioni\n/chatty-admin-help ➜ Mostra questo messaggio di aiuto",
   "db_missing_dm": "❌ Il database chatty.db non esiste.",
-  "dm_only_command": "⛔ Questo comando può essere usato solo in messaggi privati."
+  "dm_only_command": "⛔ Questo comando può essere usato solo in messaggi privati.",
+  "mention_no_message": "❓ Inserisci un messaggio dopo avermi menzionato.",
+  "trigger_no_message": "❓ Dimmi qualcosa dopo avermi chiamato.",
+  "available_models": "📄 Modelli disponibili:\n{models}",
+  "available_context_files": "📄 File di contesto disponibili:\n{files}",
+  "no_context_files": "⚠️ Nessun file di contesto trovato.",
+  "context_files_error": "❌ Errore durante la lettura dei file di contesto.",
+  "context_set": "✅ Il file di contesto è stato impostato per questo server.",
+  "context_reset": "🧹 Il file di contesto è stato resettato per questo server."
 }

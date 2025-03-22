@@ -1,3 +1,4 @@
+import asyncio
 import os
 import functools
 import logging
@@ -100,4 +101,17 @@ async def check_admin(interaction, fallback_id: int = FALLBACK_ID) -> bool:
         return True
 
     await interaction.response.send_message(t("admin_only_command"), ephemeral=True)
+    return False
+
+
+def is_dm_only(interaction: discord.Interaction) -> bool:
+    """
+    Check if the command is used in DM.
+    Returns True if DM, else sends warning message.
+    """
+    if interaction.guild is None:
+        return True
+    asyncio.create_task(
+        interaction.response.send_message(t("dm_only_command"), ephemeral=True)
+    )
     return False

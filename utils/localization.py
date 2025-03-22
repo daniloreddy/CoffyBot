@@ -2,7 +2,7 @@ import locale
 import json
 import os
 
-LANG_DIR = "lang"  # Directory with  en.json, it.json, etc.
+LANG_DIR = "lang"  # Directory with  localization files, etc.
 DEFAULT_LANG = "en"
 translations = {}
 language_cache = {}
