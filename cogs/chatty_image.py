@@ -7,7 +7,7 @@ from discord import app_commands
 from services.hugging_face_service import generate_image
 from utils.localization import t
 from utils.generic import handle_errors
-from utils.logger import bot_logger, error_logger  # Add loggers
+from utils.logger import bot_logger, error_logger
 
 
 class ChattyImage(commands.Cog):

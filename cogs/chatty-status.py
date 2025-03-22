@@ -5,7 +5,7 @@ import time
 from discord.ext import commands
 
 from utils.localization import t
-from utils.memory import user_memory
+from utils.memory import user_memory, MEMORY_FILE
 from utils.generic import handle_errors
 from services.gemini_service import MODEL
 from utils.logger import bot_logger
@@ -30,7 +30,7 @@ class ChattyStatus(commands.Cog):
         # Calculate memory.json size
         memory_size = 0
         try:
-            memory_size = os.path.getsize("memory.json")
+            memory_size = os.path.getsize(MEMORY_FILE)
         except FileNotFoundError:
             memory_size = 0
 

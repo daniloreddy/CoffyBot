@@ -1,13 +1,11 @@
-# packages
 import json
 import os
-import time
 
-# namespaces
 from collections import deque
 from utils.localization import t
+from utils.logger import bot_logger
 
-MEMORY_FILE = "memory.json"
+MEMORY_FILE = "config/memory.json"
 MEMORY_TIMEOUT = 600
 MAX_MEMORY = 5
 user_memory = {}
@@ -32,6 +30,7 @@ def save_memory_to_file():
     }
     with open(MEMORY_FILE, "w") as f:
         json.dump(data, f)
+    bot_logger.info("Memory saved to %s", MEMORY_FILE)
 
 
 def update_memory(user_id, question, now):

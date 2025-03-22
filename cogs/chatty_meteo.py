@@ -8,7 +8,7 @@ from typing import Optional
 from services.weather_service import get_weather
 from utils.localization import t
 from utils.generic import handle_errors
-from utils.logger import bot_logger, error_logger  # Add loggers
+from utils.logger import bot_logger, error_logger
 
 
 class ChattyMeteo(commands.Cog):

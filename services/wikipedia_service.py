@@ -1,7 +1,7 @@
-# packages
 import requests
-# namespaces
+
 from utils.localization import t
+
 
 # --- Wikipedia ---
 def search_wikipedia(term):

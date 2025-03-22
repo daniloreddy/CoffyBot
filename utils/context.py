@@ -1,17 +1,10 @@
 import json
 import os
 
-from utils.logger import bot_logger  # Add logger at top
+from utils.logger import bot_logger
 
-CONTEXT_FILE = "context.json"
+CONTEXT_FILE = "config/context.json"
 PROMPT_DIR = "prompts"
-
-# Load context.json at startup or create empty
-if os.path.isfile(CONTEXT_FILE):
-    with open(CONTEXT_FILE, "r", encoding="utf-8") as f:
-        server_context = json.load(f)
-else:
-    server_context = {}
 
 
 def save_context_to_file():
@@ -55,6 +48,7 @@ def set_context_file(server_name: str, filename: str) -> bool:
     if os.path.isfile(path):
         server_context[server_name] = filename
         save_context_to_file()
+        bot_logger.info("Context file '%s' set for server '%s'", filename, server_name)
         return True
     return False
 
@@ -64,3 +58,13 @@ def reset_context(server_name: str):
     if server_name in server_context:
         del server_context[server_name]
         save_context_to_file()
+
+
+# Load context.json at startup or create empty
+if os.path.isfile(CONTEXT_FILE):
+    with open(CONTEXT_FILE, "r", encoding="utf-8") as f:
+        server_context = json.load(f)
+else:
+    server_context = {}
+    save_context_to_file()  # Crea file vuoto
+    bot_logger.info("Context file not found, created empty context.json")

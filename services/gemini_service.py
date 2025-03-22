@@ -1,14 +1,28 @@
 import os
+import json
 import google.generativeai as genai
+
 from dotenv import load_dotenv
-from utils.localization import t
-from utils.logger import service_logger, error_logger  # Universal loggers
+from utils.logger import service_logger, error_logger
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 
+# Default model
 MODEL = "gemini-1.5-flash"
+
+# Load supported models from file
+try:
+    with open("config/models.json", "r") as f:
+        config_data = json.load(f)
+        SUPPORTED_MODELS = config_data.get("gemini_models", [])
+        if MODEL not in SUPPORTED_MODELS:
+            SUPPORTED_MODELS.insert(0, MODEL)  # Ensure default is always valid
+    service_logger.info("Supported Gemini models loaded: %s", SUPPORTED_MODELS)
+except Exception as e:
+    error_logger.error("Failed to load models.json: %s", str(e))
+    SUPPORTED_MODELS = [MODEL]
 
 
 def change_model(name):
@@ -22,7 +36,7 @@ def change_model(name):
         bool: True if model is changed, False if invalid name.
     """
     global MODEL
-    if name in ["gemini-1.5-flash", "gemini-1.5-pro"]:
+    if name in SUPPORTED_MODELS:
         MODEL = name
         service_logger.info("Gemini model changed to: %s", MODEL)
         return True

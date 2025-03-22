@@ -1,16 +1,12 @@
 import discord
-import os
-
 from discord.ext import commands
 from discord import app_commands
 
 from utils.localization import t
 from utils.generic import handle_errors, check_admin
-from services.gemini_service import change_model
+from services.gemini_service import change_model, SUPPORTED_MODELS
 from utils.logger import bot_logger, error_logger
 from utils.context import set_context_file, reset_context
-
-AVAILABLE_MODELS = ["gemini-1.5-flash", "gemini-1.5-pro"]
 
 
 class ChattyAdmin(commands.Cog):
@@ -25,8 +21,8 @@ class ChattyAdmin(commands.Cog):
     async def chatty_model(self, interaction: discord.Interaction, modello: str):
         if not await check_admin(interaction):
             return
-        ok = change_model(modello)
 
+        ok = change_model(modello)
         if ok:
             bot_logger.info(
                 "Gemini model switched by %s (ID: %s) to: %s",
@@ -48,11 +44,12 @@ class ChattyAdmin(commands.Cog):
     async def autocomplete_models(self, interaction: discord.Interaction, current: str):
         suggestions = [
             app_commands.Choice(name=mod, value=mod)
-            for mod in AVAILABLE_MODELS
+            for mod in SUPPORTED_MODELS
             if current.lower() in mod.lower()
         ]
         return suggestions[:5]
 
+    # --- CONTEXT SET ---
     @app_commands.command(
         name="chatty-context",
         description="Set the context file for this server",
@@ -73,10 +70,11 @@ class ChattyAdmin(commands.Cog):
         if not filename.endswith(".txt"):
             filename += ".txt"
 
-        if interaction.guild:
-            server_name = interaction.guild.name
-        else:
-            server_name = f"DM-{interaction.user.name}"
+        server_name = (
+            interaction.guild.name
+            if interaction.guild
+            else f"DM-{interaction.user.name}"
+        )
 
         result = set_context_file(server_name, filename)
 
@@ -101,6 +99,7 @@ class ChattyAdmin(commands.Cog):
                 t("invalid_context_file"), ephemeral=True
             )
 
+    # --- CONTEXT RESET ---
     @app_commands.command(
         name="chatty-context-reset",
         description="Reset the context file for this server",
@@ -110,10 +109,11 @@ class ChattyAdmin(commands.Cog):
         if not await check_admin(interaction):
             return
 
-        if interaction.guild:
-            server_name = interaction.guild.name
-        else:
-            server_name = f"DM-{interaction.user.name}"
+        server_name = (
+            interaction.guild.name
+            if interaction.guild
+            else f"DM-{interaction.user.name}"
+        )
 
         reset_context(server_name)
         bot_logger.info(

@@ -2,13 +2,14 @@ import sqlite3
 import os
 import sys
 
-DB_FILE = "chatty.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_FILE = os.path.normpath(os.path.join(BASE_DIR, "../chatty.db"))
 
 if not os.path.isfile(DB_FILE):
     print("❌ The database chatty.db does not exist in the current folder.")
     sys.exit(1)
 
-conn = sqlite3.connect(DB_FILE)
+conn = sqlite3.connect(DB_FILE, timeout=5)
 cursor = conn.cursor()
 
 

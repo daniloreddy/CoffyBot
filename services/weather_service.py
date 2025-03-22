@@ -1,7 +1,8 @@
 import os
 import requests
+
 from datetime import datetime
-from utils.localization import t  # Se t è esterno
+from utils.localization import t
 
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 WEATHER_EMOJIS = {
@@ -15,6 +16,7 @@ WEATHER_EMOJIS = {
     "fog": "🌫️",
     "haze": "🌫️",
 }
+
 
 async def get_weather(city, date=None):
     try:

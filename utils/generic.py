@@ -13,6 +13,7 @@ from odf.text import P
 
 from utils.localization import t
 
+
 # --- Read Attached File Content ---
 async def read_file_content(attachment):
     try:
@@ -59,6 +60,7 @@ async def read_file_content(attachment):
     except Exception as e:
         return t("file_reading_error", error=e)
 
+
 def handle_errors(command_name: str):
     def decorator(func):
         @functools.wraps(func)
@@ -71,11 +73,16 @@ def handle_errors(command_name: str):
                     if interaction.response.is_done():
                         await interaction.followup.send(t("generic_error"))
                     else:
-                        await interaction.response.send_message(t("generic_error"), ephemeral=True)
+                        await interaction.response.send_message(
+                            t("generic_error"), ephemeral=True
+                        )
                 except Exception as inner_err:
                     logging.error("Error in command %s: %s", command_name, str(e))
+
         return wrapper
+
     return decorator
+
 
 # --- Admin Role Check ---
 ADMIN_ROLES = ["Admin", "Boss", "CoffyMaster"]

@@ -6,7 +6,7 @@ from discord import app_commands
 from utils.localization import t
 from utils.memory import user_memory
 from utils.generic import check_admin, handle_errors
-from utils.logger import bot_logger  # Add logger
+from utils.logger import bot_logger
 
 
 class ChattyMemory(commands.Cog):

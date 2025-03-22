@@ -1,21 +1,18 @@
 import discord
 import os
 import sqlite3
-import tempfile
 
 from discord.ext import commands
 from discord import app_commands
-from datetime import datetime, timedelta
 
 from utils.localization import t
-from utils.memory import user_memory
+from utils.memory import user_memory, MEMORY_FILE
 from utils.context import server_context
 from services.gemini_service import MODEL
 from utils.logger import bot_logger
 from utils.generic import check_admin, handle_errors
 
 DB_FILE = "chatty.db"
-
 
 class BotAdmin(commands.Cog):
     def __init__(self, bot):
@@ -40,7 +37,7 @@ class BotAdmin(commands.Cog):
 
         users_memorized = len(user_memory)
         memory_size = (
-            os.path.getsize("memory.json") if os.path.isfile("memory.json") else 0
+            os.path.getsize(MEMORY_FILE) if os.path.isfile(MEMORY_FILE) else 0
         )
         memsize_str = (
             f"{memory_size / 1024:.2f} KB"

@@ -5,7 +5,7 @@ from discord import app_commands
 
 from services.wikipedia_service import search_wikipedia
 from utils.generic import handle_errors
-from utils.logger import bot_logger  # Add bot_logger
+from utils.logger import bot_logger
 
 
 class ChattyWiki(commands.Cog):

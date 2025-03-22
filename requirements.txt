@@ -7,9 +7,6 @@ google-generativeai
 # Gestione variabili ambiente
 python-dotenv
 
-# Dashboard web
-flask
-
 # Sintesi vocale (TTS)
 gtts
 
