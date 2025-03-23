@@ -15,8 +15,20 @@ from odf.text import P
 from utils.localization import t
 
 
-# --- Read Attached File Content ---
 async def read_file_content(attachment):
+    """
+    Read the content of a supported file attachment.
+
+    Supports TXT, CSV, HTML, PDF, DOCX, ODT formats with size limits.
+    Converts content to plain text.
+
+    Args:
+        attachment (discord.Attachment): The uploaded file.
+
+    Returns:
+        str: Extracted text or error message.
+    """
+
     try:
         filename = attachment.filename.lower()
         if filename.endswith(".txt") or filename.endswith(".csv"):
@@ -63,6 +75,15 @@ async def read_file_content(attachment):
 
 
 def handle_errors(command_name: str):
+    """
+    Decorator to handle exceptions in Discord commands.
+
+    Logs the error and sends a localized error message to the user.
+
+    Args:
+        command_name (str): Name of the command for logging.
+    """
+
     def decorator(func):
         @functools.wraps(func)
         async def wrapper(interaction: discord.Interaction, *args, **kwargs):
@@ -91,6 +112,17 @@ FALLBACK_ID = int(os.getenv("FALLBACK_ID"))
 
 
 async def check_admin(interaction, fallback_id: int = FALLBACK_ID) -> bool:
+    """
+    Check if the user invoking the command has admin privileges.
+
+    Args:
+        interaction (discord.Interaction): The command interaction.
+        fallback_id (int): User ID fallback if roles are not present.
+
+    Returns:
+        bool: True if admin, False otherwise.
+    """
+
     try:
         if any(role.name in ADMIN_ROLES for role in interaction.user.roles):
             return True
@@ -106,9 +138,15 @@ async def check_admin(interaction, fallback_id: int = FALLBACK_ID) -> bool:
 
 def is_dm_only(interaction: discord.Interaction) -> bool:
     """
-    Check if the command is used in DM.
-    Returns True if DM, else sends warning message.
+    Check if a command is used in direct messages.
+
+    Args:
+        interaction (discord.Interaction): The command interaction.
+
+    Returns:
+        bool: True if DM, else sends warning and returns False.
     """
+
     if interaction.guild is None:
         return True
     asyncio.create_task(

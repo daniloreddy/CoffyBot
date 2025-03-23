@@ -14,6 +14,10 @@ cursor = conn.cursor()
 
 
 def show_menu():
+    """
+    Display the interactive CLI menu for querying the chatty.db database.
+    """
+
     print()
     print("📊 Coffy Query Tool - chatty.db")
     print("1. View the last 10 conversations")
@@ -23,6 +27,13 @@ def show_menu():
 
 
 def print_results(rows):
+    """
+    Print formatted query results from the database.
+
+    Args:
+        rows (list): List of database rows to print.
+    """
+
     if not rows:
         print("⚠️ No results found.")
         return

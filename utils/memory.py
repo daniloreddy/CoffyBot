@@ -24,6 +24,12 @@ if os.path.isfile(MEMORY_FILE):
 
 
 def save_memory_to_file():
+    """
+    Save the current user memory to disk in JSON format.
+
+    Converts deque objects to lists for serialization.
+    """
+
     data = {
         uid: {"exchanges": list(d["exchanges"]), "timestamp": d["timestamp"]}
         for uid, d in user_memory.items()
@@ -34,6 +40,18 @@ def save_memory_to_file():
 
 
 def update_memory(user_id, question, now):
+    """
+    Update or initialize the memory for a user and generate a prompt.
+
+    Args:
+        user_id (str): The Discord user ID.
+        question (str): The new user question.
+        now (float): Current timestamp.
+
+    Returns:
+        str: Generated prompt including past exchanges and the new question.
+    """
+
     if (
         user_id in user_memory
         and now - user_memory[user_id]["timestamp"] > MEMORY_TIMEOUT

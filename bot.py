@@ -4,13 +4,11 @@ import discord
 import os
 import re
 import random
-import atexit
 import time
 
 from dotenv import load_dotenv
 from discord.ext import commands
 
-from utils.memory import user_memory, save_memory_to_file, update_memory
 from utils.localization import detect_system_language, load_language, t
 from utils.logger import bot_logger, error_logger
 from services.gemini_service import get_gemini_response, get_current_model
@@ -25,10 +23,16 @@ load_language(detect_system_language())
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
-atexit.register(save_memory_to_file)
 
 
 async def chatty_debug_admininfo(message):
+    """
+    Send admin role and fallback ID information for debugging purposes.
+
+    Args:
+        message (discord.Message): The message triggering the debug command.
+    """
+
     ADMIN_ROLES = ["Admin", "Boss", "CoffyMaster"]
     FALLBACK_ID = 400409909184954373
 
@@ -57,12 +61,27 @@ async def chatty_debug_admininfo(message):
 
 
 async def handle_chatty_interaction(message: discord.Message, user_message: str):
+    """
+    Handle user messages directed to the bot and get a Gemini response.
+
+    Combines server context with user message to form the prompt.
+
+    Args:
+        message (discord.Message): The user message object.
+        user_message (str): The cleaned message content without triggers.
+    """
+
     server_name = message.guild.name if message.guild else f"DM-{message.author.name}"
     context_prompt = get_context_prompt(server_name)
-    now = int(message.created_at.timestamp())
-    full_prompt = context_prompt + "\n" if context_prompt else ""
-    full_prompt += update_memory(str(message.author.id), user_message, now)
 
+    # Compose the final prompt
+    if context_prompt:
+        full_prompt = context_prompt.strip() + "\n\n" + user_message
+        bot_logger.info("Context applied for server '%s'", server_name)
+    else:
+        full_prompt = user_message
+
+    # Get response from Gemini
     response = get_gemini_response(full_prompt)
 
     if response:
@@ -73,14 +92,22 @@ async def handle_chatty_interaction(message: discord.Message, user_message: str)
             response[:100],
         )
     else:
-        await message.channel.send("❌ Error while processing message.")
-
-    save_memory_to_file()
+        await message.channel.send(t("gemini_error"))
 
 
 # on_message events
 @bot.event
 async def on_message(message):
+    """
+    Event handler for all incoming messages.
+
+    Processes admin debug, bot mentions, trigger words, and 'alive' checks.
+    Delegates valid interactions to handle_chatty_interaction.
+
+    Args:
+        message (discord.Message): Incoming Discord message.
+    """
+
     if message.author == bot.user:
         return
 
@@ -155,6 +182,11 @@ async def on_message(message):
 
 @bot.event
 async def on_ready():
+    """
+    Event handler triggered when the bot is ready.
+
+    Logs bot online status and syncs slash commands.
+    """
 
     bot_logger.info("Bot %s is online! Model: %s", bot.user, get_current_model())
 
@@ -166,12 +198,20 @@ async def on_ready():
 
 
 async def load_all_cogs():
+    """
+    Load all cog extensions from the ./cogs directory.
+    """
+
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
             await bot.load_extension(f"cogs.{filename[:-3]}")
 
 
 async def main():
+    """
+    Entry point: Load all cogs and start the bot using the token from environment.
+    """
+
     await load_all_cogs()
     await bot.start(os.getenv("BOT_TOKEN"))
 

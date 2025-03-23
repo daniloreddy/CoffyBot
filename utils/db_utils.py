@@ -20,6 +20,16 @@ conn.commit()
 
 
 def log_to_sqlite(user_obj, channel_obj, message, response):
+    """
+    Insert a conversation entry into the SQLite database.
+
+    Args:
+        user_obj: The Discord user object.
+        channel_obj: The Discord channel object (or DM).
+        message (str): User message.
+        response (str): Bot response.
+    """
+
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     cursor.execute(
         """INSERT INTO conversations (timestamp, user, user_id, channel, message, response)

@@ -7,12 +7,15 @@ from discord import app_commands
 
 from utils.localization import t
 from utils.generic import handle_errors, check_admin, is_dm_only
-from services.gemini_service import change_model, SUPPORTED_MODELS, get_current_model
+from services.gemini_service import (
+    change_model,
+    get_supported_models,
+    get_current_model,
+)
 from utils.logger import bot_logger, error_logger
 from utils.context import set_context_file, reset_context, server_context
 from utils.memory import user_memory, MEMORY_FILE
-
-DB_FILE = "chatty.db"
+from utils.db_utils import DB_FILE
 
 
 class ChattyAdmin(commands.Cog):
@@ -53,7 +56,7 @@ class ChattyAdmin(commands.Cog):
     async def autocomplete_models(self, interaction: discord.Interaction, current: str):
         suggestions = [
             app_commands.Choice(name=mod, value=mod)
-            for mod in SUPPORTED_MODELS
+            for mod in get_supported_models()
             if current.lower() in mod.lower()
         ]
         return suggestions[:5]
@@ -94,9 +97,7 @@ class ChattyAdmin(commands.Cog):
                 interaction.user.display_name,
                 interaction.user.id,
             )
-            await interaction.response.send_message(
-                t("context_set"), ephemeral=True
-            )
+            await interaction.response.send_message(t("context_set"), ephemeral=True)
         else:
             error_logger.warning(
                 "Invalid context file attempt by %s (ID: %s): %s",
@@ -298,13 +299,11 @@ class ChattyAdmin(commands.Cog):
         if not is_dm_only(interaction):
             return
 
-        from services.gemini_service import get_current_model, SUPPORTED_MODELS
-
         current = get_current_model()
         model_list = "\n".join(
             [
                 f"🔹 {m} {'(active)' if m == current else ''}".strip()
-                for m in SUPPORTED_MODELS
+                for m in get_supported_models()
             ]
         )
         await interaction.response.send_message(

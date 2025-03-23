@@ -8,7 +8,12 @@ PROMPT_DIR = "prompts"
 
 
 def get_server_context():
-    """Load context from disk and return the context dictionary."""
+    """
+    Load the current context mapping from disk.
+
+    Returns:
+        dict: Mapping of server_name -> context filename.
+    """
     try:
         with open(CONTEXT_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -17,17 +22,35 @@ def get_server_context():
         return {}
 
 
-def save_context_to_file():
-    """Save the current server_context dictionary to context."""
-    with open(CONTEXT_FILE, "w", encoding="utf-8") as f:
-        json.dump(server_context, f, indent=4)
+def save_context_to_file(context: dict):
+    """
+    Save the given context mapping to disk.
+
+    Args:
+        context (dict): Mapping of server_name -> context filename.
+    """
+    try:
+        with open(CONTEXT_FILE, "w", encoding="utf-8") as f:
+            json.dump(context, f, indent=4)
+    except Exception as e:
+        bot_logger.error("Failed to save context: %s", str(e))
 
 
 def get_context_prompt(server_name: str) -> str:
-    """Return the context prompt for the given server, and log the file used."""
-    filename = server_context.get(server_name)
+    """
+    Return the context prompt for the given server, and log the file used.
+
+    Args:
+        server_name (str): The name of the server.
+
+    Returns:
+        str: The context prompt content, or empty string if not found.
+    """
+    context = get_server_context()
+    filename = context.get(server_name)
     if not filename:
         return ""
+
     path = os.path.join(PROMPT_DIR, filename)
     if os.path.isfile(path):
         try:
@@ -53,27 +76,44 @@ def get_context_prompt(server_name: str) -> str:
 
 
 def set_context_file(server_name: str, filename: str) -> bool:
+    """
+    Associate a context file with a server and save the mapping.
+
+    Args:
+        server_name (str): The server's name.
+        filename (str): The context file to associate.
+
+    Returns:
+        bool: True if successful, False otherwise.
+    """
     path = os.path.join(PROMPT_DIR, filename)
     if os.path.isfile(path):
         context = get_server_context()
         context[server_name] = filename
-        try:
-            with open(CONTEXT_FILE, "w", encoding="utf-8") as f:
-                json.dump(context, f, indent=4)
-            bot_logger.info(
-                "Context file '%s' set for server '%s'", filename, server_name
-            )
-            return True
-        except Exception as e:
-            bot_logger.error("Failed to save context: %s", str(e))
-    return False
+        save_context_to_file(context)
+        bot_logger.info("Context file '%s' set for server '%s'", filename, server_name)
+        return True
+    else:
+        bot_logger.warning(
+            "Attempted to set non-existent context file '%s' for server '%s'",
+            filename,
+            server_name,
+        )
+        return False
 
 
 def reset_context(server_name: str):
-    """Reset context for a server (remove entry)."""
-    if server_name in server_context:
-        del server_context[server_name]
-        save_context_to_file()
+    """
+    Remove the context association for a server.
+
+    Args:
+        server_name (str): The server's name.
+    """
+    context = get_server_context()
+    if server_name in context:
+        del context[server_name]
+        save_context_to_file(context)
+        bot_logger.info("Context reset for server '%s'", server_name)
 
 
 # Load context at startup or create empty

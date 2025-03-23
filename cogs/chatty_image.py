@@ -40,7 +40,7 @@ class ChattyImage(commands.Cog):
             prompt[:100],
         )
 
-        image_file = generate_image(prompt)
+        image_file = await generate_image(prompt)
 
         if image_file == "loading":
             bot_logger.warning(

@@ -1,68 +1,57 @@
 import os
 import json
+
 import google.generativeai as genai
 
 from dotenv import load_dotenv
 from utils.logger import service_logger, error_logger
 
+# Load environment variables
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
-MODELS = "config/models.json"
 
-# Load supported models and last used model from file
-try:
-    with open(MODELS, "r", encoding="utf-8") as f:
-        config_data = json.load(f)
-        SUPPORTED_MODELS = config_data.get("gemini_models", [])
-        MODEL = config_data.get(
-            "last_used_model",
-            SUPPORTED_MODELS[0] if SUPPORTED_MODELS else "gemini-1.5-flash",
-        )
-        if MODEL not in SUPPORTED_MODELS:
-            MODEL = SUPPORTED_MODELS[0] if SUPPORTED_MODELS else "gemini-1.5-flash"
-    service_logger.info("Supported Gemini models loaded: %s", SUPPORTED_MODELS)
-    service_logger.info("Last used model: %s", MODEL)
-except Exception as e:
-    error_logger.error("Failed to load models: %s", str(e))
-    SUPPORTED_MODELS = ["gemini-1.5-flash"]
-    MODEL = "gemini-1.5-flash"
+# Constants
+MODELS_FILE = "config/models.json"
+DEFAULT_MODEL = "gemini-1.5-flash"
+
+
+def load_model_config():
+    """Load model configuration from JSON file."""
+    try:
+        with open(MODELS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        error_logger.error("Failed to load models file: %s", str(e))
+        return {"gemini_models": [DEFAULT_MODEL], "last_used_model": DEFAULT_MODEL}
 
 
 def get_supported_models():
-    try:
-        with open(MODELS, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return data.get("gemini_models", [])
-    except Exception as e:
-        error_logger.error("Failed to load models: %s", str(e))
-        return []
+    """Return list of supported Gemini models."""
+    config = load_model_config()
+    models = config.get("gemini_models", [DEFAULT_MODEL])
+    return models
 
 
 def get_current_model():
-    try:
-        with open(MODELS, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            last_model = data.get("last_used_model")
-            supported = data.get("gemini_models", [])
-            if last_model in supported:
-                return last_model
-            return supported[0] if supported else "gemini-1.5-flash"
-    except Exception as e:
-        error_logger.error("Failed to get current model: %s", str(e))
-        return "gemini-1.5-flash"
+    """Return the last used model, or fallback to first supported."""
+    config = load_model_config()
+    supported = config.get("gemini_models", [DEFAULT_MODEL])
+    last_model = config.get("last_used_model")
+    if last_model in supported:
+        return last_model
+    return supported[0] if supported else DEFAULT_MODEL
 
 
 def change_model(name):
+    """Change the active Gemini model, if valid."""
     supported = get_supported_models()
     if name in supported:
         try:
-            with open(MODELS, "r+", encoding="utf-8") as f:
-                data = json.load(f)
-                data["last_used_model"] = name
-                f.seek(0)
-                json.dump(data, f, indent=4)
-                f.truncate()
+            config = load_model_config()
+            config["last_used_model"] = name
+            with open(MODELS_FILE, "w", encoding="utf-8") as f:
+                json.dump(config, f, indent=4)
             service_logger.info("Gemini model changed to: %s", name)
             return True
         except Exception as e:
@@ -74,18 +63,24 @@ def change_model(name):
 
 def get_gemini_response(prompt):
     """
-    Generate a response from Gemini model.
+    Generate response from Gemini API using current model.
 
     Args:
-        prompt (str): Prompt text for the AI model.
+        prompt (str): The full prompt to send.
 
     Returns:
-        str: Generated response text or error message.
+        str | None: The model's response or None on error.
     """
+    model_name = get_current_model()
+
+    # Log prompt preview
+    preview = prompt[:45] + " [...] " + prompt[-45:] if len(prompt) > 90 else prompt
+    service_logger.info("Gemini prompt preview: %s", preview)
+
     try:
-        model_instance = genai.GenerativeModel(MODEL)
+        model_instance = genai.GenerativeModel(model_name)
         response = model_instance.generate_content(prompt)
-        service_logger.info("Gemini response generated with model: %s", MODEL)
+        service_logger.info("Gemini response generated with model: %s", model_name)
         return response.text
     except Exception as e:
         error_logger.error("Gemini API error: %s", str(e))

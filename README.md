@@ -64,7 +64,6 @@ chatty.bat
 ```text
 discord.py
 python-dotenv
-requests
 gtts
 beautifulsoup4
 python-docx

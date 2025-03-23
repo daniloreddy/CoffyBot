@@ -32,7 +32,7 @@ class ChattyWiki(commands.Cog):
             termine,
         )
 
-        title, description, link, image = search_wikipedia(termine)
+        title, description, link, image = await search_wikipedia(termine)
 
         embed = discord.Embed(
             title=f"📚 Wikipedia: {title}",
