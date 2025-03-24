@@ -1,3 +1,5 @@
+Ecco il sorgente Markdown del tuo README, pronto da copiare o salvare:
+
 # Coffy Discord Bot
 
 **Coffy** is a private Discord bot powered by Google Gemini models. It can generate AI responses, images, and audio, fetch weather data, search Wikipedia, and includes advanced admin commands for server customization and monitoring.
@@ -38,12 +40,18 @@ HUGGINGFACE_API_KEY=your_huggingface_api_key
 FALLBACK_ID=your_discord_user_id
 ```
 
-2. Install dependencies:
+2. Create and activate a virtual environment (recommended):
+```bash
+python -m venv coffy-env
+source coffy-env/bin/activate  # On Windows: coffy-env\Scripts\activate
+```
+
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the bot:
+4. Run the bot:
 ```bash
 python bot.py
 ```
@@ -100,5 +108,5 @@ Each interaction is processed independently, using only context (if set).
 
 ## 📬 Contact
 
-Developed by [Your Name or Discord Tag].  
+Developed by OpenAI ChatGPT with supervision of DaniloReddy.  
 For issues or requests, contact me directly.
