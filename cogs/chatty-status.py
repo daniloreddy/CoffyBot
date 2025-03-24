@@ -2,7 +2,7 @@ import discord
 import time
 
 from discord.ext import commands
-from utils.localization import t
+from utils.localization import translate
 from utils.generic import handle_errors
 from services.gemini import get_current_model
 from utils.logger import bot_logger
@@ -33,7 +33,7 @@ class ChattyStatus(commands.Cog):
         else:
             uptime_str = f"{hours}h {minutes}m {seconds}s"
 
-        message_text = t(
+        message_text = translate(
             "info_message",
             model=get_current_model(),
             context=context_file,

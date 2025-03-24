@@ -1,112 +1,104 @@
-# ☕ CoffyBot – Discord AI Companion
+# Coffy Discord Bot
 
-![CoffyBot](https://img.shields.io/badge/CoffyBot-AI%20Discord%20Bot-blueviolet?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-
-> Un bot Discord potenziato con intelligenza artificiale che fornisce chat, meteo, TTS, immagini AI e tanto altro. Minimal, potente e 100% personalizzabile.
+**Coffy** is a private Discord bot powered by Google Gemini models. It can generate AI responses, images, and audio, fetch weather data, search Wikipedia, and includes advanced admin commands for server customization and monitoring.
 
 ---
 
-## 🚀 Funzionalità Principali
-- 💬 **Chat AI (Gemini)** ➜ risponde con IA Google Gemini, supporta allegati PDF, TXT, DOCX, HTML, CSV, ODT.
-- 🌦️ **Meteo** ➜ previsioni per oggi, domani, dopodomani o data specifica (es: `22-03-2025`).
-- 🗣️ **TTS** ➜ genera audio MP3 da testo.
-- 🖼️ **Immagini AI** ➜ genera immagini da prompt (Stable Diffusion via Hugging Face).
-- 🗄️ **Log su database** ➜ tutte le chat vengono loggate in `chatty.db`.
-- 📊 **Dashboard Web** ➜ attività live via browser ([localhost:5000](http://localhost:5000)).
-- 🔐 **Comandi admin-only** ➜ gestione ruoli + fallback ID.
+## 🚀 Features
+
+- 🤖 Chat with Google Gemini (via `/chatty`)
+- 🖼️ Generate images using Stable Diffusion (Hugging Face API)
+- 🔊 Text-to-Speech audio generation (Google TTS)
+- ☁️ Weather forecast from OpenWeather
+- 📚 Wikipedia search
+- 🛠️ Admin commands via DM (model switch, logs, context management)
 
 ---
 
-## 📂 Struttura Progetto
-- `bot.py` ➜ core bot, comandi slash
-- `services_utils.py` ➜ funzioni meteo, TTS, immagini, admin-check
-- `db_utils.py` ➜ logging SQLite
-- `dashboard.py` ➜ Flask dashboard web
-- `chatty.env` ➜ variabili API (non incluso)
-- `chatty.env.bat` ➜ variabili API per Windows (non incluso)
+## 📂 Project Structure
+
+```
+/bot.py                 # Main bot script
+/utils/                 # Configuration, logging, context, helpers
+/services/              # API integrations (Gemini, TTS, Weather, etc.)
+/cogs/                  # Discord command modules (COGs)
+/tools/                 # Utility tools (key checker, DB helper)
+```
 
 ---
 
-## ⚙️ Installazione
+## ⚙️ Setup Guide
+
+1. Create a `.env` file in the root directory with your API keys and settings:
+```
+BOT_TOKEN=your_discord_bot_token
+GEMINI_API_KEY=your_google_gemini_api_key
+OPENWEATHER_API_KEY=your_openweather_api_key
+HUGGINGFACE_API_KEY=your_huggingface_api_key
+FALLBACK_ID=your_discord_user_id
+```
+
+2. Install dependencies:
 ```bash
-# Clona il progetto
-git clone https://github.com/daniloreddy/coffybot.git
-cd coffybot
-
-# Crea ambiente virtuale
-python3 -m venv coffy-env
-source coffy-env/bin/activate
-# Windows
-python -m venv coffy-env
-call coffy-env\Scriptsbin\activate
-
-# Installa dipendenze
 pip install -r requirements.txt
 ```
 
-### 🖥️ Avvio Bot
+3. Run the bot:
 ```bash
-# Linux
-./chatty.sh
-
-# Windows
-chatty.bat
+python bot.py
 ```
 
 ---
 
-## 📦 Requisiti (requirements.txt)
-```text
-discord.py
-python-dotenv
-gtts
-beautifulsoup4
-python-docx
-odfpy
-PyMuPDF
-flask
-```
+## 🌐 Localization
+
+All user-facing messages are localized via JSON files in the `/lang/` directory.  
+Use `tools/key_verification_tool.py` to detect unused or missing translation keys.
+
+Default language: **English**  
+Languages can be added via additional JSON files: `en.json`, `it.json`, etc.
 
 ---
 
-## 🔐 Configura `chatty.env`
-```env
-BOT_TOKEN=Inserisci_il_token_discord
-GEMINI_API_KEY=Chiave_Gemini
-OPENWEATHER_API_KEY=Chiave_OpenWeather
-HUGGINGFACE_API_KEY=Chiave_HuggingFace
-FALLBACK_ID=Tuoi_ID_Discord
-```
+## 📊 Logs
+
+Log files are saved in the `/logs/` directory:
+- `bot.log` ➔ General events and commands
+- `services.log` ➔ External API calls
+- `errors.log` ➔ Errors and exceptions
 
 ---
 
-## 🛡️ Comandi Principali
-| Comando Slash        | Descrizione                                     |
-|----------------------|-------------------------------------------------|
-| `/chatty`            | Chatta con Coffy (allegati supportati)         |
-| `/chatty-wiki`       | Cerca su Wikipedia                             |
-| `/chatty-meteo`      | Mostra meteo con data personalizzata           |
-| `/chatty-tts`        | Genera audio da testo                          |
-| `/chatty-image`      | Genera immagine AI                             |
-| `/chatty-info`       | Info su modello                                |
-| `/chatty-model`      | Cambia modello Gemini (admin only)             |
+## 🧹 Context System
+
+Each server can have a **custom AI context** stored in `/prompts/`.  
+Admins can assign these contexts using the `/chatty-admin-context` command.
+
+Context file format: plain `.txt`, content is prepended to each AI prompt.
 
 ---
 
-## 🕵️ Debug nascosto (incognito mode)
-Messaggio testuale:
-```
-chatty debug admininfo
-```
+## 🛠️ Admin Features
+
+Available via private messages (DM) only:
+- Switch Gemini model
+- View last conversations
+- Activity stats (last 7 days)
+- View/set/reset server context
+- List supported models and context files
+
+Admin access is role-based (`Admin`, `Boss`, `CoffyMaster`) or by fallback ID.
 
 ---
 
-## 📝 Licenza
-MIT License - Free to use & customize.
+## 🧠 Memory Note
+
+Coffy does **not store conversation history**.  
+Each interaction is processed independently, using only context (if set).
 
 ---
 
-> Made with ☕ by ChatGPT e daniloreddy - Powered by voglia di spaccare su Discord.  
-> **DAJEEE!**
+## 📬 Contact
+
+Developed by [Your Name or Discord Tag].  
+For issues or requests, contact me directly.

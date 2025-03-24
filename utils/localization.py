@@ -43,7 +43,7 @@ def load_language(lang_code):
         return translations
 
 
-def t(key, lang="en", **kwargs):
+def translate(key, lang="en", **kwargs):
     """
     Translate a key using the loaded language file, with optional formatting.
 

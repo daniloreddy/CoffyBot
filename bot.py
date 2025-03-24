@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from discord.ext import commands
 
 from utils.config import ADMIN_ROLES, FALLBACK_ID, BOT_TOKEN
-from utils.localization import detect_system_language, load_language, t
+from utils.localization import detect_system_language, load_language, translate
 from utils.logger import bot_logger, error_logger
 from services.gemini import get_gemini_response, get_current_model
 from utils.context import get_context_prompt
@@ -31,8 +31,8 @@ async def chatty_debug_admininfo(message):
     """
     is_admin = await check_admin(message)
 
-    status = t("admin_status_yes") if is_admin else t("admin_status_no")
-    message_text = t(
+    status = translate("admin_status_yes") if is_admin else translate("admin_status_no")
+    message_text = translate(
         "admin_debug_message",
         roles=", ".join(ADMIN_ROLES),
         fallback=FALLBACK_ID,
@@ -72,7 +72,7 @@ async def handle_chatty_interaction(message: discord.Message, user_message: str)
             preview,
         )
     else:
-        await message.channel.send(t("gemini_error"))
+        await message.channel.send(translate("gemini_error"))
 
 
 @bot.event
@@ -127,11 +127,11 @@ async def on_message(message):
 
     if re.search(r"(coffy|chatty)\s+sei\s+vivo", content):
         responses_list = [
-            t("alive_response_1"),
-            t("alive_response_2"),
-            t("alive_response_3"),
-            t("alive_response_4"),
-            t("alive_response_5"),
+            translate("alive_response_1"),
+            translate("alive_response_2"),
+            translate("alive_response_3"),
+            translate("alive_response_4"),
+            translate("alive_response_5"),
         ]
         response = random.choice(responses_list)
         bot_logger.info(

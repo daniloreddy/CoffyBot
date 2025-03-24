@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 
 from services.google_tts import generate_tts_audio
-from utils.localization import t
+from utils.localization import translate
 from utils.generic import handle_errors, safe_delete
 from utils.logger import bot_logger, error_logger
 
@@ -19,7 +19,9 @@ class ChattyTTS(commands.Cog):
     @handle_errors("chatty-tts")
     async def chatty_tts(self, interaction: discord.Interaction, testo: str):
         if not testo.strip():
-            await interaction.response.send_message(t("tts_no_text"), ephemeral=True)
+            await interaction.response.send_message(
+                translate("tts_no_text"), ephemeral=True
+            )
             return
 
         await interaction.response.defer()
@@ -48,7 +50,7 @@ class ChattyTTS(commands.Cog):
             error_logger.error(
                 "TTS generation failed for %s", interaction.user.display_name
             )
-            await interaction.followup.send(t("tts_error"))
+            await interaction.followup.send(translate("tts_error"))
 
 
 async def setup(bot):

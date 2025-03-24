@@ -1,5 +1,5 @@
 import aiohttp
-from utils.localization import t
+from utils.localization import translate
 from utils.logger import service_logger, error_logger
 
 
@@ -30,7 +30,7 @@ async def search_wikipedia(term):
                     return title, extract, link, image
                 else:
                     service_logger.warning("Wikipedia no entry for term: %s", term)
-                    return None, t("wiki_no_entry"), "", None
+                    return None, translate("wiki_no_entry"), "", None
     except Exception as e:
         error_logger.error("Wikipedia search error: %s", str(e))
-        return None, t("wiki_error", error=e), "", None
+        return None, translate("wiki_error", error=e), "", None

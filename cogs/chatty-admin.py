@@ -5,7 +5,7 @@ import sqlite3
 from discord.ext import commands
 from discord import app_commands
 
-from utils.localization import t
+from utils.localization import translate
 from utils.generic import handle_errors, check_admin, is_dm_only
 from services.gemini import (
     change_model,
@@ -48,7 +48,9 @@ class ChattyAdmin(commands.Cog):
                 interaction.user.id,
                 modello,
             )
-            await interaction.response.send_message(t("model_switched", model=modello))
+            await interaction.response.send_message(
+                translate("model_switched", model=modello)
+            )
         else:
             error_logger.warning(
                 "Invalid model switch attempt by %s (ID: %s): %s",
@@ -56,7 +58,7 @@ class ChattyAdmin(commands.Cog):
                 interaction.user.id,
                 modello,
             )
-            await interaction.response.send_message(t("invalid_model"))
+            await interaction.response.send_message(translate("invalid_model"))
 
     @chatty_model.autocomplete("modello")
     async def autocomplete_models(self, interaction: discord.Interaction, current: str):
@@ -81,7 +83,7 @@ class ChattyAdmin(commands.Cog):
         filename = filename.strip()
         if not filename:
             await interaction.response.send_message(
-                t("invalid_context_file"), ephemeral=True
+                translate("invalid_context_file"), ephemeral=True
             )
             return
 
@@ -103,7 +105,9 @@ class ChattyAdmin(commands.Cog):
                 interaction.user.display_name,
                 interaction.user.id,
             )
-            await interaction.response.send_message(t("context_set"), ephemeral=True)
+            await interaction.response.send_message(
+                translate("context_set"), ephemeral=True
+            )
         else:
             error_logger.warning(
                 "Invalid context file attempt by %s (ID: %s): %s",
@@ -112,7 +116,7 @@ class ChattyAdmin(commands.Cog):
                 filename,
             )
             await interaction.response.send_message(
-                t("invalid_context_file"), ephemeral=True
+                translate("invalid_context_file"), ephemeral=True
             )
 
     # --- CONTEXT RESET ---
@@ -137,7 +141,9 @@ class ChattyAdmin(commands.Cog):
             interaction.user.display_name,
             interaction.user.id,
         )
-        await interaction.response.send_message(t("context_reset"), ephemeral=True)
+        await interaction.response.send_message(
+            translate("context_reset"), ephemeral=True
+        )
 
     @app_commands.command(
         name="chatty-admin-stats",
@@ -154,12 +160,14 @@ class ChattyAdmin(commands.Cog):
         )
 
         embed = discord.Embed(
-            title=t("embed_stats_title"),
-            description=t("embed_stats_desc", model=get_current_model()),
+            title=translate("embed_stats_title"),
+            description=translate("embed_stats_desc", model=get_current_model()),
             color=discord.Color.blue(),
         )
         embed.add_field(
-            name=t("embed_context_title"), value=server_context_info, inline=False
+            name=translate("embed_context_title"),
+            value=server_context_info,
+            inline=False,
         )
         await interaction.response.send_message(embed=embed)
         bot_logger.info(
@@ -178,7 +186,9 @@ class ChattyAdmin(commands.Cog):
             return
 
         if not os.path.isfile(DB_FILE):
-            await interaction.response.send_message(t("db_missing_dm"), ephemeral=True)
+            await interaction.response.send_message(
+                translate("db_missing_dm"), ephemeral=True
+            )
             return
 
         conn = sqlite3.connect(DB_FILE)
@@ -190,12 +200,14 @@ class ChattyAdmin(commands.Cog):
         conn.close()
 
         if not rows:
-            await interaction.response.send_message(t("no_activity_dm"), ephemeral=True)
+            await interaction.response.send_message(
+                translate("no_activity_dm"), ephemeral=True
+            )
             return
 
         activity_log = "\n".join([f"{day}: {count} messages" for day, count in rows])
         embed = discord.Embed(
-            title=t("embed_activity_title"),
+            title=translate("embed_activity_title"),
             description=activity_log,
             color=discord.Color.green(),
         )
@@ -216,7 +228,9 @@ class ChattyAdmin(commands.Cog):
             return
 
         if not os.path.isfile(DB_FILE):
-            await interaction.response.send_message(t("db_missing_dm"), ephemeral=True)
+            await interaction.response.send_message(
+                translate("db_missing_dm"), ephemeral=True
+            )
             return
 
         conn = sqlite3.connect(DB_FILE)
@@ -229,7 +243,7 @@ class ChattyAdmin(commands.Cog):
 
         if not rows:
             await interaction.response.send_message(
-                t("no_conversations_dm"), ephemeral=True
+                translate("no_conversations_dm"), ephemeral=True
             )
             return
 
@@ -237,7 +251,7 @@ class ChattyAdmin(commands.Cog):
         for row in rows:
             logs += f"\ud83d\udd52 {row[0]} - \ud83d\udc64 {row[1]} ({row[2]}) - \ud83d\udce2 #{row[3]}\n\ud83d\udcac {row[4]}\n\ud83e\udd16 {row[5]}\n{'-'*40}\n"
 
-        output_text = t("last_conversations", logs=logs)
+        output_text = translate("last_conversations", logs=logs)
         if len(output_text) <= 2000:
             await interaction.response.send_message(output_text)
         else:
@@ -266,7 +280,9 @@ class ChattyAdmin(commands.Cog):
         if not await check_admin_and_dm(interaction):
             return
 
-        await interaction.response.send_message(t("admin_help_message"), ephemeral=True)
+        await interaction.response.send_message(
+            translate("admin_help_message"), ephemeral=True
+        )
         bot_logger.info(
             "Admin help requested via DM by %s (ID: %s)",
             interaction.user.display_name,
@@ -290,7 +306,7 @@ class ChattyAdmin(commands.Cog):
             ]
         )
         await interaction.response.send_message(
-            t("available_models", models=model_list), ephemeral=True
+            translate("available_models", models=model_list), ephemeral=True
         )
         bot_logger.info(
             "Model list requested via DM by %s (ID: %s)",
@@ -309,9 +325,9 @@ class ChattyAdmin(commands.Cog):
 
         try:
             files = [f for f in os.listdir("prompts") if f.endswith(".txt")]
-            file_list = "\n".join(files) if files else t("no_context_files")
+            file_list = "\n".join(files) if files else translate("no_context_files")
             await interaction.response.send_message(
-                t("available_context_files", files=file_list), ephemeral=True
+                translate("available_context_files", files=file_list), ephemeral=True
             )
             bot_logger.info(
                 "Context files listed via DM by %s (ID: %s)",
@@ -321,7 +337,7 @@ class ChattyAdmin(commands.Cog):
         except Exception as e:
             error_logger.error("Failed to list context files: %s", str(e))
             await interaction.response.send_message(
-                t("context_files_error"), ephemeral=True
+                translate("context_files_error"), ephemeral=True
             )
 
 

@@ -1,7 +1,7 @@
 import discord
 
 from discord.ext import commands
-from utils.localization import t
+from utils.localization import translate
 
 
 class ChattyHelp(commands.Cog):
@@ -12,7 +12,7 @@ class ChattyHelp(commands.Cog):
         name="chatty-help", description="Show the list of available commands"
     )
     async def chatty_help(self, interaction: discord.Interaction):
-        message_text = t("help_message")
+        message_text = translate("help_message")
         await interaction.response.send_message(message_text, ephemeral=True)
 
 

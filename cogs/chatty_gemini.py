@@ -4,7 +4,7 @@ from discord import app_commands
 from typing import Optional
 
 from services.gemini import get_gemini_response
-from utils.localization import t
+from utils.localization import translate
 from utils.db_utils import log_to_sqlite
 from utils.generic import read_file_content, handle_errors
 from utils.logger import bot_logger
@@ -42,7 +42,10 @@ class ChattyGemini(commands.Cog):
         final_prompt = prompt
         if attachment_texts:
             final_prompt += (
-                "\n\n" + t("attachment_content") + "\n" + "\n".join(attachment_texts)
+                "\n\n"
+                + translate("attachment_content")
+                + "\n"
+                + "\n".join(attachment_texts)
             )
 
         channel_name = (
@@ -68,7 +71,7 @@ class ChattyGemini(commands.Cog):
         response_text = get_gemini_response(full_prompt)
 
         if response_text is None:
-            await interaction.followup.send(t("gemini_error"))
+            await interaction.followup.send(translate("gemini_error"))
             return
 
         log_to_sqlite(
@@ -77,12 +80,12 @@ class ChattyGemini(commands.Cog):
 
         if len(response_text) <= 4096:
             embed = discord.Embed(
-                title=t("response_title"),
+                title=translate("response_title"),
                 description=response_text,
                 color=discord.Color.green(),
             )
             embed.set_footer(
-                text=t("response_footer", user=interaction.user.display_name),
+                text=translate("response_footer", user=interaction.user.display_name),
                 icon_url=interaction.user.display_avatar.url,
             )
             await interaction.followup.send(embed=embed)

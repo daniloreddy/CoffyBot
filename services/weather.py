@@ -2,7 +2,7 @@ import aiohttp
 from datetime import datetime
 
 from utils.config import OPENWEATHER_API_KEY, WEATHER_EMOJIS
-from utils.localization import t
+from utils.localization import translate
 from utils.logger import service_logger, error_logger
 
 
@@ -66,7 +66,7 @@ async def get_weather(city, date=None):
                 )
                 data = await fetch_weather_data(session, url)
                 if not data:
-                    return t("weather_city_not_found")
+                    return translate("weather_city_not_found")
 
                 service_logger.info("Weather data fetched for city: %s", city)
                 temp = data["main"]["temp"]
@@ -87,7 +87,7 @@ async def get_weather(city, date=None):
                 )
                 data = await fetch_weather_data(session, url)
                 if not data:
-                    return t("weather_city_not_found")
+                    return translate("weather_city_not_found")
 
                 selected = None
                 for entry in data["list"]:
@@ -97,7 +97,9 @@ async def get_weather(city, date=None):
                         break
 
                 if not selected:
-                    return t("weather_no_forecast", date=date.strftime("%d-%m-%Y"))
+                    return translate(
+                        "weather_no_forecast", date=date.strftime("%d-%m-%Y")
+                    )
 
                 service_logger.info("Weather forecast fetched for %s (%s)", city, date)
                 temp = selected["main"]["temp"]
@@ -112,4 +114,4 @@ async def get_weather(city, date=None):
 
     except Exception as e:
         error_logger.error("Weather service error: %s", str(e))
-        return t("weather_error", error=e)
+        return translate("weather_error", error=e)

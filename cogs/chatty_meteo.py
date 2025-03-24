@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from services.weather import get_weather
-from utils.localization import t
+from utils.localization import translate
 from utils.generic import handle_errors
 from utils.logger import bot_logger, error_logger
 
@@ -53,7 +53,7 @@ class ChattyMeteo(commands.Cog):
             error_logger.warning(
                 "Invalid date format from %s: %s", interaction.user.display_name, giorno
             )
-            await interaction.followup.send(t("invalid_date"))
+            await interaction.followup.send(translate("invalid_date"))
             return
 
         # --- LOG Weather Request ---

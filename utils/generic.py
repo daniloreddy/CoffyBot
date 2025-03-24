@@ -10,7 +10,7 @@ from docx import Document
 from odf.opendocument import load
 from odf.text import P
 
-from utils.localization import t
+from utils.localization import translate
 from utils.logger import bot_logger
 from utils.config import ADMIN_ROLES, FALLBACK_ID, MAX_PDF_SIZE, MAX_TXT_CSV_HTML_SIZE
 
@@ -38,7 +38,7 @@ async def read_file_content(attachment):
                     return soup.get_text()
                 return file_bytes.decode("utf-8", errors="ignore")
             else:
-                return t("file_too_large_small", filename=filename)
+                return translate("file_too_large_small", filename=filename)
 
         elif filename.endswith(".pdf"):
             if attachment.size <= MAX_PDF_SIZE:
@@ -47,7 +47,7 @@ async def read_file_content(attachment):
                     text = "".join([page.get_text() for page in doc])
                     return text[:5000]
             else:
-                return t("file_too_large_pdf", filename=filename)
+                return translate("file_too_large_pdf", filename=filename)
 
         elif filename.endswith(".docx"):
             file_bytes = await attachment.read()
@@ -62,10 +62,10 @@ async def read_file_content(attachment):
             return text[:5000]
 
         else:
-            return t("file_format_not_supported", filename=filename)
+            return translate("file_format_not_supported", filename=filename)
 
     except Exception as e:
-        return t("file_reading_error", error=e)
+        return translate("file_reading_error", error=e)
 
 
 def handle_errors(command_name: str):
@@ -87,10 +87,10 @@ def handle_errors(command_name: str):
                 bot_logger.error("Error in command %s: %s", command_name, str(e))
                 try:
                     if interaction.response.is_done():
-                        await interaction.followup.send(t("generic_error"))
+                        await interaction.followup.send(translate("generic_error"))
                     else:
                         await interaction.response.send_message(
-                            t("generic_error"), ephemeral=True
+                            translate("generic_error"), ephemeral=True
                         )
                 except Exception:
                     bot_logger.error("Failed to send error message to user.")
@@ -116,12 +116,14 @@ async def check_admin(interaction, fallback_id: int = FALLBACK_ID) -> bool:
         if any(role.name in ADMIN_ROLES for role in interaction.user.roles):
             return True
     except AttributeError:
-        bot_logger.warning(t("admin_role_fallback"))
+        bot_logger.warning(translate("admin_role_fallback"))
 
     if interaction.user.id == fallback_id:
         return True
 
-    await interaction.response.send_message(t("admin_only_command"), ephemeral=True)
+    await interaction.response.send_message(
+        translate("admin_only_command"), ephemeral=True
+    )
     return False
 
 
@@ -139,7 +141,7 @@ def is_dm_only(interaction: discord.Interaction) -> bool:
     if interaction.guild is None:
         return True
     asyncio.create_task(
-        interaction.response.send_message(t("dm_only_command"), ephemeral=True)
+        interaction.response.send_message(translate("dm_only_command"), ephemeral=True)
     )
     return False
 

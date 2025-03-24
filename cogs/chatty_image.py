@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 
 from services.hugging_face import generate_image
-from utils.localization import t
+from utils.localization import translate
 from utils.generic import handle_errors, safe_delete
 from utils.logger import bot_logger, error_logger
 
@@ -20,7 +20,7 @@ class ChattyImage(commands.Cog):
     async def chatty_image(self, interaction: discord.Interaction, prompt: str):
         if not prompt.strip():
             await interaction.response.send_message(
-                t("image_no_prompt"), ephemeral=True
+                translate("image_no_prompt"), ephemeral=True
             )
             return
 
@@ -43,10 +43,10 @@ class ChattyImage(commands.Cog):
 
         if image_file == "loading":
             bot_logger.warning("Image model loading for: %s", preview)
-            await interaction.followup.send(t("image_loading"))
+            await interaction.followup.send(translate("image_loading"))
         elif image_file == "limit":
             bot_logger.warning("API rate limit for: %s", preview)
-            await interaction.followup.send(t("image_limit"))
+            await interaction.followup.send(translate("image_limit"))
         elif image_file:
             bot_logger.info(
                 "Image generated successfully for %s", interaction.user.display_name
@@ -55,7 +55,7 @@ class ChattyImage(commands.Cog):
             safe_delete(image_file)
         else:
             error_logger.error("Image generation failed for: %s", preview)
-            await interaction.followup.send(t("image_error"))
+            await interaction.followup.send(translate("image_error"))
 
 
 async def setup(bot):
