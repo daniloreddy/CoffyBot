@@ -1,12 +1,10 @@
-import os
 import discord
-
 from discord.ext import commands
 from discord import app_commands
 
-from services.hugging_face_service import generate_image
+from services.hugging_face import generate_image
 from utils.localization import t
-from utils.generic import handle_errors
+from utils.generic import handle_errors, safe_delete
 from utils.logger import bot_logger, error_logger
 
 
@@ -32,38 +30,31 @@ class ChattyImage(commands.Cog):
         channel_name = (
             interaction.channel.name if hasattr(interaction.channel, "name") else "DM"
         )
+        preview = prompt[:50] + "..." if len(prompt) > 50 else prompt
         bot_logger.info(
-            "Image prompt received from %s (ID: %s) in [%s]: %s",
+            "Image prompt from %s (ID: %s) in [%s]: %s",
             interaction.user.display_name,
             interaction.user.id,
             channel_name,
-            prompt[:100],
+            preview,
         )
 
         image_file = await generate_image(prompt)
 
         if image_file == "loading":
-            bot_logger.warning(
-                "Image model loading – prompt from %s: %s",
-                interaction.user.display_name,
-                prompt[:50],
-            )
+            bot_logger.warning("Image model loading for: %s", preview)
             await interaction.followup.send(t("image_loading"))
         elif image_file == "limit":
-            bot_logger.warning(
-                "API rate limit reached – prompt from %s: %s",
-                interaction.user.display_name,
-                prompt[:50],
-            )
+            bot_logger.warning("API rate limit for: %s", preview)
             await interaction.followup.send(t("image_limit"))
         elif image_file:
             bot_logger.info(
                 "Image generated successfully for %s", interaction.user.display_name
             )
             await interaction.followup.send(file=discord.File(image_file))
-            os.remove(image_file)
+            safe_delete(image_file)
         else:
-            error_logger.error("Image generation failed for prompt: %s", prompt[:50])
+            error_logger.error("Image generation failed for: %s", preview)
             await interaction.followup.send(t("image_error"))
 
 

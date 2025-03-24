@@ -1,12 +1,10 @@
-import os
 import discord
-
 from discord.ext import commands
 from discord import app_commands
 
-from services.google_tts_service import generate_tts_audio
+from services.google_tts import generate_tts_audio
 from utils.localization import t
-from utils.generic import handle_errors
+from utils.generic import handle_errors, safe_delete
 from utils.logger import bot_logger, error_logger
 
 
@@ -30,12 +28,13 @@ class ChattyTTS(commands.Cog):
         channel_name = (
             interaction.channel.name if hasattr(interaction.channel, "name") else "DM"
         )
+        preview = testo[:50] + "..." if len(testo) > 50 else testo
         bot_logger.info(
             "TTS requested by %s (ID: %s) in [%s]: '%s'",
             interaction.user.display_name,
             interaction.user.id,
             channel_name,
-            testo[:100],
+            preview,
         )
 
         audio_file = generate_tts_audio(testo)
@@ -44,7 +43,7 @@ class ChattyTTS(commands.Cog):
                 "TTS audio generated successfully for %s", interaction.user.display_name
             )
             await interaction.followup.send(file=discord.File(audio_file))
-            os.remove(audio_file)
+            safe_delete(audio_file)
         else:
             error_logger.error(
                 "TTS generation failed for %s", interaction.user.display_name

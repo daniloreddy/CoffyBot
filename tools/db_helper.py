@@ -1,12 +1,17 @@
 import sqlite3
 import os
 import sys
+import logging
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_FILE = os.path.normpath(os.path.join(BASE_DIR, "../chatty.db"))
+from utils.config import DB_FILE
+
+# --- Setup logging ---
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 if not os.path.isfile(DB_FILE):
-    print("❌ The database chatty.db does not exist in the current folder.")
+    logging.error("❌ The database chatty.db does not exist in the current folder.")
     sys.exit(1)
 
 conn = sqlite3.connect(DB_FILE, timeout=5)
@@ -14,10 +19,6 @@ cursor = conn.cursor()
 
 
 def show_menu():
-    """
-    Display the interactive CLI menu for querying the chatty.db database.
-    """
-
     print()
     print("📊 Coffy Query Tool - chatty.db")
     print("1. View the last 10 conversations")
@@ -27,13 +28,6 @@ def show_menu():
 
 
 def print_results(rows):
-    """
-    Print formatted query results from the database.
-
-    Args:
-        rows (list): List of database rows to print.
-    """
-
     if not rows:
         print("⚠️ No results found.")
         return
@@ -87,4 +81,4 @@ try:
 
 finally:
     conn.close()
-    print("🔒 Database connection closed.")
+    logging.info("🔒 Database connection closed.")

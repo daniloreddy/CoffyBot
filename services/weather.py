@@ -1,21 +1,9 @@
-import os
 import aiohttp
-
 from datetime import datetime
-from utils.localization import t
 
-OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
-WEATHER_EMOJIS = {
-    "clear": "☀️",
-    "clouds": "☁️",
-    "rain": "🌧️",
-    "drizzle": "🌦️",
-    "thunderstorm": "⛈️",
-    "snow": "❄️",
-    "mist": "🌫️",
-    "fog": "🌫️",
-    "haze": "🌫️",
-}
+from utils.config import OPENWEATHER_API_KEY, WEATHER_EMOJIS
+from utils.localization import t
+from utils.logger import service_logger, error_logger
 
 
 async def fetch_weather_data(session, url):
@@ -29,13 +17,16 @@ async def fetch_weather_data(session, url):
     Returns:
         dict | None: Parsed JSON data if successful, or None on error.
     """
-
     try:
         async with session.get(url) as response:
             if response.status == 200:
                 return await response.json()
-            return None
-    except Exception:
+            else:
+                text = await response.text()
+                error_logger.error("Weather API error [%s]: %s", response.status, text)
+                return None
+    except Exception as e:
+        error_logger.error("Weather fetch error: %s", str(e))
         return None
 
 
@@ -44,21 +35,7 @@ def format_weather_response(
 ):
     """
     Format weather data into a readable string with emojis and metrics.
-
-    Args:
-        temp (float): Temperature in Celsius.
-        description (str): Weather description.
-        condition (str): Main weather condition (used for emoji).
-        humidity (int): Humidity percentage.
-        wind (float): Wind speed in m/s.
-        city (str): City name.
-        country (str): Country code.
-        date (datetime.date, optional): Date for the forecast. Defaults to None.
-
-    Returns:
-        str: Formatted weather report string.
     """
-
     emoji = WEATHER_EMOJIS.get(condition, "🌍")
     date_str = f" - {date.strftime('%d-%m-%Y')}" if date else ""
     return (
@@ -79,11 +56,10 @@ async def get_weather(city, date=None):
     Returns:
         str: Weather report string, or error message on failure.
     """
-
     try:
         async with aiohttp.ClientSession() as session:
             if date is None or date == datetime.now().date():
-                # Weather now
+                # Current weather
                 url = (
                     f"https://api.openweathermap.org/data/2.5/weather?q={city}"
                     f"&appid={OPENWEATHER_API_KEY}&units=metric&lang=it"
@@ -92,6 +68,7 @@ async def get_weather(city, date=None):
                 if not data:
                     return t("weather_city_not_found")
 
+                service_logger.info("Weather data fetched for city: %s", city)
                 temp = data["main"]["temp"]
                 description = data["weather"][0]["description"].capitalize()
                 condition = data["weather"][0]["main"].lower()
@@ -101,6 +78,7 @@ async def get_weather(city, date=None):
                 return format_weather_response(
                     temp, description, condition, humidity, wind, city, country
                 )
+
             else:
                 # Forecast
                 url = (
@@ -121,6 +99,7 @@ async def get_weather(city, date=None):
                 if not selected:
                     return t("weather_no_forecast", date=date.strftime("%d-%m-%Y"))
 
+                service_logger.info("Weather forecast fetched for %s (%s)", city, date)
                 temp = selected["main"]["temp"]
                 description = selected["weather"][0]["description"].capitalize()
                 condition = selected["weather"][0]["main"].lower()
@@ -132,4 +111,5 @@ async def get_weather(city, date=None):
                 )
 
     except Exception as e:
+        error_logger.error("Weather service error: %s", str(e))
         return t("weather_error", error=e)

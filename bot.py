@@ -1,7 +1,5 @@
-# packages
 import asyncio
 import discord
-import os
 import re
 import random
 import time
@@ -9,10 +7,12 @@ import time
 from dotenv import load_dotenv
 from discord.ext import commands
 
+from utils.config import ADMIN_ROLES, FALLBACK_ID, BOT_TOKEN
 from utils.localization import detect_system_language, load_language, t
 from utils.logger import bot_logger, error_logger
-from services.gemini_service import get_gemini_response, get_current_model
+from services.gemini import get_gemini_response, get_current_model
 from utils.context import get_context_prompt
+from utils.generic import check_admin
 
 
 # === Init section ===
@@ -28,21 +28,8 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 async def chatty_debug_admininfo(message):
     """
     Send admin role and fallback ID information for debugging purposes.
-
-    Args:
-        message (discord.Message): The message triggering the debug command.
     """
-
-    ADMIN_ROLES = ["Admin", "Boss", "CoffyMaster"]
-    FALLBACK_ID = 400409909184954373
-
-    is_admin = False
-    try:
-        if any(role.name in ADMIN_ROLES for role in message.author.roles):
-            is_admin = True
-    except AttributeError:
-        if message.author.id == FALLBACK_ID:
-            is_admin = True
+    is_admin = await check_admin(message)
 
     status = t("admin_status_yes") if is_admin else t("admin_status_no")
     message_text = t(
@@ -63,14 +50,7 @@ async def chatty_debug_admininfo(message):
 async def handle_chatty_interaction(message: discord.Message, user_message: str):
     """
     Handle user messages directed to the bot and get a Gemini response.
-
-    Combines server context with user message to form the prompt.
-
-    Args:
-        message (discord.Message): The user message object.
-        user_message (str): The cleaned message content without triggers.
     """
-
     server_name = message.guild.name if message.guild else f"DM-{message.author.name}"
     context_prompt = get_context_prompt(server_name)
 
@@ -81,33 +61,25 @@ async def handle_chatty_interaction(message: discord.Message, user_message: str)
     else:
         full_prompt = user_message
 
-    # Get response from Gemini
     response = get_gemini_response(full_prompt)
 
     if response:
         await message.channel.send(response)
+        preview = response[:100] + "..." if len(response) > 100 else response
         bot_logger.info(
             "Gemini response sent to %s: %s",
             message.author.display_name,
-            response[:100],
+            preview,
         )
     else:
         await message.channel.send(t("gemini_error"))
 
 
-# on_message events
 @bot.event
 async def on_message(message):
     """
     Event handler for all incoming messages.
-
-    Processes admin debug, bot mentions, trigger words, and 'alive' checks.
-    Delegates valid interactions to handle_chatty_interaction.
-
-    Args:
-        message (discord.Message): Incoming Discord message.
     """
-
     if message.author == bot.user:
         return
 
@@ -125,7 +97,6 @@ async def on_message(message):
             message.channel.name,
         )
 
-        # Remove the mention from the message content
         cleaned_message = message.content.replace(f"<@{bot.user.id}>", "").strip()
         if not cleaned_message:
             await message.channel.send(
@@ -133,16 +104,9 @@ async def on_message(message):
             )
             return
 
-        # Get context prompt
-        server_name = (
-            message.guild.name if message.guild else f"DM-{message.author.name}"
-        )
-        context_prompt = get_context_prompt(server_name)
-
         await handle_chatty_interaction(message, cleaned_message)
         return
 
-    # Detect message starting with "chatty" or "coffy"
     if content.startswith(("chatty", "coffy")):
         bot_logger.info(
             "Text trigger by %s (ID: %s) in [%s]",
@@ -151,7 +115,6 @@ async def on_message(message):
             message.channel.name,
         )
 
-        # Remove the trigger word from the message
         cleaned_message = re.sub(
             r"^(chatty|coffy)[\s,:]*", "", content, count=1
         ).strip()
@@ -172,7 +135,9 @@ async def on_message(message):
         ]
         response = random.choice(responses_list)
         bot_logger.info(
-            "Alive check by %s: response='%s'", message.author.display_name, response
+            "Alive check by %s: response='%s'",
+            message.author.display_name,
+            response,
         )
         await message.channel.send(f"{message.author.mention} {response}")
         return
@@ -184,10 +149,7 @@ async def on_message(message):
 async def on_ready():
     """
     Event handler triggered when the bot is ready.
-
-    Logs bot online status and syncs slash commands.
     """
-
     bot_logger.info("Bot %s is online! Model: %s", bot.user, get_current_model())
 
     try:
@@ -201,6 +163,7 @@ async def load_all_cogs():
     """
     Load all cog extensions from the ./cogs directory.
     """
+    import os
 
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
@@ -211,9 +174,8 @@ async def main():
     """
     Entry point: Load all cogs and start the bot using the token from environment.
     """
-
     await load_all_cogs()
-    await bot.start(os.getenv("BOT_TOKEN"))
+    await bot.start(BOT_TOKEN)
 
 
 if __name__ == "__main__":

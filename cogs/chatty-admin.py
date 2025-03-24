@@ -7,15 +7,23 @@ from discord import app_commands
 
 from utils.localization import t
 from utils.generic import handle_errors, check_admin, is_dm_only
-from services.gemini_service import (
+from services.gemini import (
     change_model,
     get_supported_models,
     get_current_model,
 )
 from utils.logger import bot_logger, error_logger
-from utils.context import set_context_file, reset_context, server_context
-from utils.memory import user_memory, MEMORY_FILE
-from utils.db_utils import DB_FILE
+from utils.context import set_context_file, reset_context, get_server_context
+from utils.config import DB_FILE
+
+
+# --- Helper Functions ---
+async def check_admin_and_dm(interaction):
+    if not await check_admin(interaction):
+        return False
+    if not is_dm_only(interaction):
+        return False
+    return True
 
 
 class ChattyAdmin(commands.Cog):
@@ -29,9 +37,7 @@ class ChattyAdmin(commands.Cog):
     @app_commands.describe(modello="Name of the new model (e.g., gemini-1.5-flash)")
     @handle_errors("chatty-admin-model")
     async def chatty_model(self, interaction: discord.Interaction, modello: str):
-        if not await check_admin(interaction):
-            return
-        if not is_dm_only(interaction):
+        if not await check_admin_and_dm(interaction):
             return
 
         ok = change_model(modello)
@@ -139,32 +145,17 @@ class ChattyAdmin(commands.Cog):
     )
     @handle_errors("chatty-admin-stats")
     async def chatty_stats(self, interaction: discord.Interaction):
-        if not await check_admin(interaction):
+        if not await check_admin_and_dm(interaction):
             return
-        if not is_dm_only(interaction):
-            return
-
-        users_memorized = len(user_memory)
-        memory_size = os.path.getsize(MEMORY_FILE) if os.path.isfile(MEMORY_FILE) else 0
-        memsize_str = (
-            f"{memory_size / 1024:.2f} KB"
-            if memory_size < 1024 * 1024
-            else f"{memory_size / (1024 * 1024):.2f} MB"
-        )
 
         server_context_info = (
-            "\n".join([f"{srv}: {file}" for srv, file in server_context.items()])
+            "\n".join([f"{srv}: {file}" for srv, file in get_server_context.items()])
             or "None"
         )
 
         embed = discord.Embed(
             title=t("embed_stats_title"),
-            description=t(
-                "embed_stats_desc",
-                model=get_current_model(),
-                users=users_memorized,
-                memsize=memsize_str,
-            ),
+            description=t("embed_stats_desc", model=get_current_model()),
             color=discord.Color.blue(),
         )
         embed.add_field(
@@ -183,9 +174,7 @@ class ChattyAdmin(commands.Cog):
     )
     @handle_errors("chatty-admin-activity")
     async def chatty_activity(self, interaction: discord.Interaction):
-        if not await check_admin(interaction):
-            return
-        if not is_dm_only(interaction):
+        if not await check_admin_and_dm(interaction):
             return
 
         if not os.path.isfile(DB_FILE):
@@ -223,9 +212,7 @@ class ChattyAdmin(commands.Cog):
     )
     @handle_errors("chatty-admin-lastlogs")
     async def chatty_lastlogs(self, interaction: discord.Interaction):
-        if not await check_admin(interaction):
-            return
-        if not is_dm_only(interaction):
+        if not await check_admin_and_dm(interaction):
             return
 
         if not os.path.isfile(DB_FILE):
@@ -276,9 +263,7 @@ class ChattyAdmin(commands.Cog):
     )
     @handle_errors("chatty-admin-help")
     async def chatty_help_admin(self, interaction: discord.Interaction):
-        if not await check_admin(interaction):
-            return
-        if not is_dm_only(interaction):
+        if not await check_admin_and_dm(interaction):
             return
 
         await interaction.response.send_message(t("admin_help_message"), ephemeral=True)
@@ -294,9 +279,7 @@ class ChattyAdmin(commands.Cog):
     )
     @handle_errors("chatty-admin-models")
     async def chatty_admin_models(self, interaction: discord.Interaction):
-        if not await check_admin(interaction):
-            return
-        if not is_dm_only(interaction):
+        if not await check_admin_and_dm(interaction):
             return
 
         current = get_current_model()
@@ -321,9 +304,7 @@ class ChattyAdmin(commands.Cog):
     )
     @handle_errors("chatty-admin-contexts")
     async def chatty_admin_contexts(self, interaction: discord.Interaction):
-        if not await check_admin(interaction):
-            return
-        if not is_dm_only(interaction):
+        if not await check_admin_and_dm(interaction):
             return
 
         try:

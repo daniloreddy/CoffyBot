@@ -2,9 +2,7 @@ import json
 import os
 
 from utils.logger import bot_logger
-
-CONTEXT_FILE = "config/context.json"
-PROMPT_DIR = "prompts"
+from utils.config import CONTEXT_FILE, PROMPT_DIR
 
 
 def get_server_context():
@@ -114,13 +112,3 @@ def reset_context(server_name: str):
         del context[server_name]
         save_context_to_file(context)
         bot_logger.info("Context reset for server '%s'", server_name)
-
-
-# Load context at startup or create empty
-if os.path.isfile(CONTEXT_FILE):
-    with open(CONTEXT_FILE, "r", encoding="utf-8") as f:
-        server_context = json.load(f)
-else:
-    server_context = {}
-    save_context_to_file()  # Crea file vuoto
-    bot_logger.info("Context file not found, created empty context file")

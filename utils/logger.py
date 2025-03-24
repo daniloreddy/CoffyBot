@@ -2,11 +2,7 @@ import logging
 import os
 
 from logging.handlers import RotatingFileHandler
-
-# Directory where all log files will be saved
-LOG_DIR = "logs"
-if not os.path.exists(LOG_DIR):
-    os.makedirs(LOG_DIR)
+from utils.config import LOG_DIR
 
 
 def setup_logger(name: str, log_file: str, level=logging.INFO) -> logging.Logger:
@@ -23,7 +19,6 @@ def setup_logger(name: str, log_file: str, level=logging.INFO) -> logging.Logger
     """
     filepath = os.path.join(LOG_DIR, log_file)
 
-    # Max size = 5 MB, keep 3 backups (bot.log, bot.log.1, bot.log.2)
     handler = RotatingFileHandler(
         filepath, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
     )
@@ -33,7 +28,7 @@ def setup_logger(name: str, log_file: str, level=logging.INFO) -> logging.Logger
     logger = logging.getLogger(name)
     logger.setLevel(level)
     logger.addHandler(handler)
-    logger.propagate = False  # Prevent double log on console
+    logger.propagate = False  # Prevent double logging on console
 
     return logger
 

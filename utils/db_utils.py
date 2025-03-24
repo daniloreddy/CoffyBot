@@ -1,22 +1,29 @@
 import sqlite3
 import datetime
 
-DB_FILE = "chatty.db"
+from utils.config import DB_FILE
+
 conn = sqlite3.connect(DB_FILE, check_same_thread=False)
 cursor = conn.cursor()
 
-cursor.execute(
-    """CREATE TABLE IF NOT EXISTS conversations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    timestamp TEXT,
-    user TEXT,
-    user_id TEXT,
-    channel TEXT,
-    message TEXT,
-    response TEXT
-)"""
-)
-conn.commit()
+
+def initialize_db():
+    """
+    Create the conversations table if it does not exist.
+    Should be called once at startup.
+    """
+    cursor.execute(
+        """CREATE TABLE IF NOT EXISTS conversations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            user TEXT,
+            user_id TEXT,
+            channel TEXT,
+            message TEXT,
+            response TEXT
+        )"""
+    )
+    conn.commit()
 
 
 def log_to_sqlite(user_obj, channel_obj, message, response):
@@ -29,7 +36,6 @@ def log_to_sqlite(user_obj, channel_obj, message, response):
         message (str): User message.
         response (str): Bot response.
     """
-
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     cursor.execute(
         """INSERT INTO conversations (timestamp, user, user_id, channel, message, response)
@@ -44,3 +50,10 @@ def log_to_sqlite(user_obj, channel_obj, message, response):
         ),
     )
     conn.commit()
+
+
+def close_db():
+    """
+    Close the SQLite database connection.
+    """
+    conn.close()

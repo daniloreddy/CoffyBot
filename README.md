@@ -13,10 +13,8 @@
 - 🌦️ **Meteo** ➜ previsioni per oggi, domani, dopodomani o data specifica (es: `22-03-2025`).
 - 🗣️ **TTS** ➜ genera audio MP3 da testo.
 - 🖼️ **Immagini AI** ➜ genera immagini da prompt (Stable Diffusion via Hugging Face).
-- 🧠 **Memoria utente** ➜ mantiene il contesto delle conversazioni.
 - 🗄️ **Log su database** ➜ tutte le chat vengono loggate in `chatty.db`.
 - 📊 **Dashboard Web** ➜ attività live via browser ([localhost:5000](http://localhost:5000)).
-- 🧹 **Reset memoria** ➜ comando per pulire la memoria chat.
 - 🔐 **Comandi admin-only** ➜ gestione ruoli + fallback ID.
 
 ---
@@ -24,7 +22,6 @@
 ## 📂 Struttura Progetto
 - `bot.py` ➜ core bot, comandi slash
 - `services_utils.py` ➜ funzioni meteo, TTS, immagini, admin-check
-- `memory.py` ➜ gestione memoria utente
 - `db_utils.py` ➜ logging SQLite
 - `dashboard.py` ➜ Flask dashboard web
 - `chatty.env` ➜ variabili API (non incluso)
@@ -93,8 +90,7 @@ FALLBACK_ID=Tuoi_ID_Discord
 | `/chatty-meteo`      | Mostra meteo con data personalizzata           |
 | `/chatty-tts`        | Genera audio da testo                          |
 | `/chatty-image`      | Genera immagine AI                             |
-| `/chatty-reset`      | Azzera la memoria utente (admin only)          |
-| `/chatty-info`       | Info su modello e memoria                      |
+| `/chatty-info`       | Info su modello                                |
 | `/chatty-model`      | Cambia modello Gemini (admin only)             |
 
 ---

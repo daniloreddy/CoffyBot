@@ -1,15 +1,12 @@
 import discord
-import os
 import time
 
 from discord.ext import commands
-
 from utils.localization import t
-from utils.memory import user_memory, MEMORY_FILE
 from utils.generic import handle_errors
-from services.gemini_service import get_current_model
+from services.gemini import get_current_model
 from utils.logger import bot_logger
-from utils.context import server_context
+from utils.context import get_context_prompt
 from bot import BOT_START_TIME
 
 
@@ -18,28 +15,13 @@ class ChattyStatus(commands.Cog):
         self.bot = bot
 
     @discord.app_commands.command(
-        name="chatty-info", description="Show info about the bot and memory"
+        name="chatty-info", description="Show info about the bot"
     )
     @handle_errors("chatty-info")
     async def chatty_info(self, interaction: discord.Interaction):
-        users_memorized = len(user_memory)
         server_name = interaction.guild.name if interaction.guild else "DM"
-
-        context_file = server_context.get(server_name, "None")
-
-        # Calculate memory size
-        memory_size = 0
-        try:
-            memory_size = os.path.getsize(MEMORY_FILE)
-        except FileNotFoundError:
-            memory_size = 0
-
-        if memory_size < 1024:
-            size_str = f"{memory_size} B"
-        elif memory_size < 1024 * 1024:
-            size_str = f"{memory_size / 1024:.2f} KB"
-        else:
-            size_str = f"{memory_size / (1024 * 1024):.2f} MB"
+        context_content = get_context_prompt(server_name)
+        context_file = "Active" if context_content else "None"
 
         # Calculate uptime
         uptime_seconds = int(time.time() - BOT_START_TIME)
@@ -54,9 +36,7 @@ class ChattyStatus(commands.Cog):
         message_text = t(
             "info_message",
             model=get_current_model(),
-            users=users_memorized,
             context=context_file,
-            memsize=size_str,
             uptime=uptime_str,
         )
 
@@ -65,12 +45,11 @@ class ChattyStatus(commands.Cog):
             interaction.channel.name if hasattr(interaction.channel, "name") else "DM"
         )
         bot_logger.info(
-            "Info requested by %s (ID: %s) in [%s] | Context: %s | MemSize: %s | Uptime: %s",
+            "Info requested by %s (ID: %s) in [%s] | Context: %s | Uptime: %s",
             interaction.user.display_name,
             interaction.user.id,
             channel_name,
             context_file,
-            size_str,
             uptime_str,
         )
 

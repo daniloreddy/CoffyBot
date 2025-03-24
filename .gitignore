@@ -5,5 +5,4 @@ logs/*.log
 coffy-env/
 __pycache__/
 config/context.json
-config/memory.json
 prompts/*.txt

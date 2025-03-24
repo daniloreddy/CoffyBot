@@ -1,19 +1,11 @@
-import os
 import json
-
 import google.generativeai as genai
 
-from dotenv import load_dotenv
+from utils.config import GEMINI_API_KEY, MODELS_FILE, DEFAULT_MODEL
 from utils.logger import service_logger, error_logger
 
-# Load environment variables
-load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# --- Configure Gemini API ---
 genai.configure(api_key=GEMINI_API_KEY)
-
-# Constants
-MODELS_FILE = "config/models.json"
-DEFAULT_MODEL = "gemini-1.5-flash"
 
 
 def load_model_config():
@@ -73,7 +65,6 @@ def get_gemini_response(prompt):
     """
     model_name = get_current_model()
 
-    # Log prompt preview
     preview = prompt[:45] + " [...] " + prompt[-45:] if len(prompt) > 90 else prompt
     service_logger.info("Gemini prompt preview: %s", preview)
 

@@ -1,9 +1,8 @@
 import discord
-
 from discord.ext import commands
 from discord import app_commands
 
-from services.wikipedia_service import search_wikipedia
+from services.wikipedia import search_wikipedia
 from utils.generic import handle_errors
 from utils.logger import bot_logger
 
@@ -24,15 +23,20 @@ class ChattyWiki(commands.Cog):
         channel_name = (
             interaction.channel.name if hasattr(interaction.channel, "name") else "DM"
         )
+        preview = termine[:50] + "..." if len(termine) > 50 else termine
         bot_logger.info(
             "Wikipedia search by %s (ID: %s) in [%s]: term='%s'",
             interaction.user.display_name,
             interaction.user.id,
             channel_name,
-            termine,
+            preview,
         )
 
         title, description, link, image = await search_wikipedia(termine)
+
+        if title is None:
+            await interaction.followup.send(description)
+            return
 
         embed = discord.Embed(
             title=f"📚 Wikipedia: {title}",

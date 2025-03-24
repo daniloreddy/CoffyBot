@@ -1,11 +1,9 @@
 import asyncio
 import os
 import functools
-import logging
 import discord
 import io
 import fitz  # PyMuPDF
-import logging
 
 from bs4 import BeautifulSoup
 from docx import Document
@@ -13,6 +11,8 @@ from odf.opendocument import load
 from odf.text import P
 
 from utils.localization import t
+from utils.logger import bot_logger
+from utils.config import ADMIN_ROLES, FALLBACK_ID, MAX_PDF_SIZE, MAX_TXT_CSV_HTML_SIZE
 
 
 async def read_file_content(attachment):
@@ -28,26 +28,20 @@ async def read_file_content(attachment):
     Returns:
         str: Extracted text or error message.
     """
-
     try:
         filename = attachment.filename.lower()
-        if filename.endswith(".txt") or filename.endswith(".csv"):
-            if attachment.size <= 20480:
+        if filename.endswith((".txt", ".csv", ".html")):
+            if attachment.size <= MAX_TXT_CSV_HTML_SIZE:
                 file_bytes = await attachment.read()
+                if filename.endswith(".html"):
+                    soup = BeautifulSoup(file_bytes, "html.parser")
+                    return soup.get_text()
                 return file_bytes.decode("utf-8", errors="ignore")
             else:
                 return t("file_too_large_small", filename=filename)
 
-        elif filename.endswith(".html"):
-            if attachment.size <= 20480:
-                file_bytes = await attachment.read()
-                soup = BeautifulSoup(file_bytes, "html.parser")
-                return soup.get_text()
-            else:
-                return t("file_too_large_small", filename=filename)
-
         elif filename.endswith(".pdf"):
-            if attachment.size <= 1048576:
+            if attachment.size <= MAX_PDF_SIZE:
                 file_bytes = await attachment.read()
                 with fitz.open(stream=file_bytes, filetype="pdf") as doc:
                     text = "".join([page.get_text() for page in doc])
@@ -90,7 +84,7 @@ def handle_errors(command_name: str):
             try:
                 await func(interaction, *args, **kwargs)
             except Exception as e:
-                logging.error("Error in command %s: %s", command_name, str(e))
+                bot_logger.error("Error in command %s: %s", command_name, str(e))
                 try:
                     if interaction.response.is_done():
                         await interaction.followup.send(t("generic_error"))
@@ -98,17 +92,12 @@ def handle_errors(command_name: str):
                         await interaction.response.send_message(
                             t("generic_error"), ephemeral=True
                         )
-                except Exception as inner_err:
-                    logging.error("Error in command %s: %s", command_name, str(e))
+                except Exception:
+                    bot_logger.error("Failed to send error message to user.")
 
         return wrapper
 
     return decorator
-
-
-# --- Admin Role Check ---
-ADMIN_ROLES = ["Admin", "Boss", "CoffyMaster"]
-FALLBACK_ID = int(os.getenv("FALLBACK_ID"))
 
 
 async def check_admin(interaction, fallback_id: int = FALLBACK_ID) -> bool:
@@ -127,7 +116,7 @@ async def check_admin(interaction, fallback_id: int = FALLBACK_ID) -> bool:
         if any(role.name in ADMIN_ROLES for role in interaction.user.roles):
             return True
     except AttributeError:
-        logging.warning(t("admin_role_fallback"))
+        bot_logger.warning(t("admin_role_fallback"))
 
     if interaction.user.id == fallback_id:
         return True
@@ -153,3 +142,12 @@ def is_dm_only(interaction: discord.Interaction) -> bool:
         interaction.response.send_message(t("dm_only_command"), ephemeral=True)
     )
     return False
+
+
+def safe_delete(filepath: str):
+    """Delete a file if it exists, safely."""
+    try:
+        if os.path.isfile(filepath):
+            os.remove(filepath)
+    except Exception:
+        pass

@@ -5,7 +5,7 @@ from discord import app_commands
 from datetime import datetime, timedelta
 from typing import Optional
 
-from services.weather_service import get_weather
+from services.weather import get_weather
 from utils.localization import t
 from utils.generic import handle_errors
 from utils.logger import bot_logger, error_logger
