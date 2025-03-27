@@ -173,7 +173,7 @@ def handle_errors(command_name: str):
 
     def decorator(func):
         @functools.wraps(func)
-        async def wrapper(interaction: discord.Interaction, *args, **kwargs):
+        async def wrapper(interaction: Interaction, *args, **kwargs):
             try:
                 await func(interaction, *args, **kwargs)
             except Exception as e:
@@ -198,7 +198,7 @@ async def check_admin(interaction, fallback_id: int = DISCORD_FALLBACK_ID) -> bo
     Check if the user invoking the command has admin privileges.
 
     Args:
-        interaction (discord.Interaction): The command interaction.
+        interaction (Interaction): The command interaction.
         fallback_id (int): User ID fallback if roles are not present.
 
     Returns:
@@ -220,12 +220,12 @@ async def check_admin(interaction, fallback_id: int = DISCORD_FALLBACK_ID) -> bo
     return False
 
 
-def is_dm_only(interaction: discord.Interaction) -> bool:
+def is_dm_only(interaction: Interaction) -> bool:
     """
     Check if a command is used in direct messages.
 
     Args:
-        interaction (discord.Interaction): The command interaction.
+        interaction (Interaction): The command interaction.
 
     Returns:
         bool: True if DM, else sends warning and returns False.

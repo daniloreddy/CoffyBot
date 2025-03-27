@@ -3,7 +3,7 @@
 import discord
 
 from discord.ext import commands
-from discord import app_commands
+from discord import app_commands, Interaction
 
 from core.handler import fetch_wikipedia
 from utils.generic import handle_errors
@@ -19,12 +19,12 @@ class ChattyWiki(commands.Cog):
     )
     @app_commands.describe(termine="Term to search on Wikipedia")
     @handle_errors("chatty-wiki")
-    async def chatty_wiki(self, interaction: discord.Interaction, termine: str):
+    async def chatty_wiki(self, interaction: Interaction, termine: str):
         """
         Search for a term on Wikipedia and return the summary in an embed.
 
         Args:
-            interaction (discord.Interaction): The command interaction.
+            interaction (Interaction): The command interaction.
             termine (str): The term to search on Wikipedia.
         """
 

@@ -3,7 +3,7 @@
 import discord
 
 from discord.ext import commands
-from discord import app_commands
+from discord import app_commands, Interaction
 from typing import Optional
 
 from utils.localization import translate
@@ -28,7 +28,7 @@ class ChattyGemini(commands.Cog):
     @handle_errors("chatty")
     async def chatty(
         self,
-        interaction: discord.Interaction,
+        interaction: Interaction,
         prompt: str,
         allegato: Optional[discord.Attachment] = None,
     ):

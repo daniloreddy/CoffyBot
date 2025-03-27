@@ -2,6 +2,7 @@
 
 import discord
 
+from discord import Interaction
 from discord.ext import commands
 from utils.localization import translate
 
@@ -13,7 +14,7 @@ class ChattyHelp(commands.Cog):
     @discord.app_commands.command(
         name="chatty-help", description="Show the list of available commands"
     )
-    async def chatty_help(self, interaction: discord.Interaction):
+    async def chatty_help(self, interaction: Interaction):
         """
         Display the list of available bot commands and descriptions.
         """

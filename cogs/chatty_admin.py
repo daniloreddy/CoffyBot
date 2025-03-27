@@ -5,7 +5,7 @@ import os
 import sqlite3
 
 from discord.ext import commands
-from discord import app_commands
+from discord import app_commands, Interaction
 
 from utils.localization import translate
 from utils.generic import (
@@ -35,7 +35,7 @@ class ChattyAdmin(commands.Cog):
     @handle_errors("chatty-admin-model")
     @require_discord_dm()
     @require_discord_admin()
-    async def chatty_model(self, interaction: discord.Interaction, modello: str):
+    async def chatty_model(self, interaction: Interaction, modello: str):
 
         ok = change_model(modello)
         if ok:
@@ -58,7 +58,7 @@ class ChattyAdmin(commands.Cog):
             await interaction.response.send_message(translate("invalid_model"))
 
     @chatty_model.autocomplete("modello")
-    async def autocomplete_models(self, interaction: discord.Interaction, current: str):
+    async def autocomplete_models(self, interaction: Interaction, current: str):
         suggestions = [
             app_commands.Choice(name=mod, value=mod)
             for mod in get_supported_models()
@@ -74,7 +74,7 @@ class ChattyAdmin(commands.Cog):
     @app_commands.describe(filename="Name of the file in prompts/ (without .txt)")
     @handle_errors("chatty-admin-context")
     @require_discord_admin()
-    async def chatty_context(self, interaction: discord.Interaction, filename: str):
+    async def chatty_context(self, interaction: Interaction, filename: str):
 
         filename = filename.strip()
         if not filename:
@@ -122,12 +122,12 @@ class ChattyAdmin(commands.Cog):
     )
     @handle_errors("chatty-admin-context-reset")
     @require_discord_admin()
-    async def chatty_context_reset(self, interaction: discord.Interaction):
+    async def chatty_context_reset(self, interaction: Interaction):
         """
         Reset the context prompt for the current server.
 
         Args:
-            interaction (discord.Interaction): The command interaction.
+            interaction (Interaction): The command interaction.
         """
         server_name = (
             interaction.guild.name
@@ -152,12 +152,12 @@ class ChattyAdmin(commands.Cog):
     @handle_errors("chatty-admin-stats")
     @require_discord_dm()
     @require_discord_admin()
-    async def chatty_stats(self, interaction: discord.Interaction):
+    async def chatty_stats(self, interaction: Interaction):
         """
         Show basic bot usage statistics including number of conversations and unique users.
 
         Args:
-            interaction (discord.Interaction): The command interaction.
+            interaction (Interaction): The command interaction.
         """
         server_context_info = (
             "\n".join([f"{srv}: {file}" for srv, file in get_server_context.items()])
@@ -188,12 +188,12 @@ class ChattyAdmin(commands.Cog):
     @handle_errors("chatty-admin-activity")
     @require_discord_dm()
     @require_discord_admin()
-    async def chatty_activity(self, interaction: discord.Interaction):
+    async def chatty_activity(self, interaction: Interaction):
         """
         Show daily conversation activity over the last 7 days in graphical format.
 
         Args:
-            interaction (discord.Interaction): The command interaction.
+            interaction (Interaction): The command interaction.
         """
         if not os.path.isfile(DB_FILE):
             await interaction.response.send_message(
@@ -235,12 +235,12 @@ class ChattyAdmin(commands.Cog):
     @handle_errors("chatty-admin-lastlogs")
     @require_discord_dm()
     @require_discord_admin()
-    async def chatty_lastlogs(self, interaction: discord.Interaction):
+    async def chatty_lastlogs(self, interaction: Interaction):
         """
         Show the last 10 Gemini prompts and responses for moderation or debugging.
 
         Args:
-            interaction (discord.Interaction): The command interaction.
+            interaction (Interaction): The command interaction.
         """
         if not os.path.isfile(DB_FILE):
             await interaction.response.send_message(
@@ -293,12 +293,12 @@ class ChattyAdmin(commands.Cog):
     @handle_errors("chatty-admin-help")
     @require_discord_dm()
     @require_discord_admin()
-    async def chatty_help_admin(self, interaction: discord.Interaction):
+    async def chatty_help_admin(self, interaction: Interaction):
         """
         Display a list of all available admin commands and their descriptions.
 
         Args:
-            interaction (discord.Interaction): The command interaction.
+            interaction (Interaction): The command interaction.
         """
         await interaction.response.send_message(
             translate("admin_help_message_discord"), ephemeral=True
@@ -316,12 +316,12 @@ class ChattyAdmin(commands.Cog):
     @handle_errors("chatty-admin-models")
     @require_discord_dm()
     @require_discord_admin()
-    async def chatty_admin_models(self, interaction: discord.Interaction):
+    async def chatty_admin_models(self, interaction: Interaction):
         """
         List all available Gemini models and highlight the currently active one.
 
         Args:
-            interaction (discord.Interaction): The command interaction.
+            interaction (Interaction): The command interaction.
         """
         current = get_current_model()
         model_list = "\n".join(
@@ -346,12 +346,12 @@ class ChattyAdmin(commands.Cog):
     @handle_errors("chatty-admin-contexts")
     @require_discord_dm()
     @require_discord_admin()
-    async def chatty_admin_contexts(self, interaction: discord.Interaction):
+    async def chatty_admin_contexts(self, interaction: Interaction):
         """
         List all available context files in the prompts/ directory.
 
         Args:
-            interaction (discord.Interaction): The command interaction.
+            interaction (Interaction): The command interaction.
         """
         try:
             files = [f for f in os.listdir("prompts") if f.endswith(".txt")]

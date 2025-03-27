@@ -3,7 +3,7 @@
 import discord
 
 from discord.ext import commands
-from discord import app_commands
+from discord import app_commands, Interaction
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -27,7 +27,7 @@ class ChattyMeteo(commands.Cog):
     @handle_errors("chatty-meteo")
     async def weather_command(
         self,
-        interaction: discord.Interaction,
+        interaction: Interaction,
         citta: str,
         giorno: Optional[str] = "oggi",
     ):
@@ -35,7 +35,7 @@ class ChattyMeteo(commands.Cog):
         Show the weather forecast for a specific city and day.
 
         Args:
-            interaction (discord.Interaction): The command interaction.
+            interaction (Interaction): The command interaction.
             citta (str): City name.
             giorno (str, optional): Day of the forecast ("oggi", "domani", "dopodomani" or date).
         """

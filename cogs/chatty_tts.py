@@ -3,7 +3,7 @@
 import discord
 
 from discord.ext import commands
-from discord import app_commands
+from discord import app_commands, Interaction
 
 from utils.localization import translate
 from utils.generic import handle_errors, safe_delete
@@ -20,12 +20,12 @@ class ChattyTTS(commands.Cog):
     )
     @app_commands.describe(testo="Text to convert to audio")
     @handle_errors("chatty-tts")
-    async def chatty_tts(self, interaction: discord.Interaction, testo: str):
+    async def chatty_tts(self, interaction: Interaction, testo: str):
         """
         Generate a TTS audio response from the provided text.
 
         Args:
-            interaction (discord.Interaction): The command interaction.
+            interaction (Interaction): The command interaction.
             testo (str): Text to convert to audio.
         """
         if not testo.strip():
