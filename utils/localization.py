@@ -1,3 +1,5 @@
+# utils/localization.py
+
 import locale
 import json
 import os

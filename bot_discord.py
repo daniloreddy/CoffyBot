@@ -1,50 +1,21 @@
+# bot_discord.py
 import asyncio
 import discord
 import re
-import random
-import time
 
-from dotenv import load_dotenv
 from discord.ext import commands
 
-from utils.config import ADMIN_ROLES, FALLBACK_ID, BOT_TOKEN
-from utils.localization import detect_system_language, load_language, translate
+from utils.config import DISCORD_BOT_TOKEN
+from utils.localization import translate
 from utils.logger import bot_logger, error_logger
 from services.gemini import get_gemini_response, get_current_model
 from utils.context import get_context_prompt
 from utils.generic import check_admin
 
 
-# === Init section ===
-BOT_START_TIME = time.time()
-load_dotenv()
-load_language(detect_system_language())
-
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
-
-
-async def chatty_debug_admininfo(message):
-    """
-    Send admin role and fallback ID information for debugging purposes.
-    """
-    is_admin = await check_admin(message)
-
-    status = translate("admin_status_yes") if is_admin else translate("admin_status_no")
-    message_text = translate(
-        "admin_debug_message",
-        roles=", ".join(ADMIN_ROLES),
-        fallback=FALLBACK_ID,
-        status=status,
-    )
-    await message.channel.send(message_text)
-
-    bot_logger.info(
-        "Admin debug info requested by %s (ID: %s)",
-        message.author.display_name,
-        message.author.id,
-    )
 
 
 async def handle_chatty_interaction(message: discord.Message, user_message: str):
@@ -85,10 +56,6 @@ async def on_message(message):
 
     content = message.content.lower()
 
-    if content == "chatty debug admininfo":
-        await chatty_debug_admininfo(message)
-        return
-
     if bot.user in message.mentions:
         bot_logger.info(
             "Bot mentioned by %s (ID: %s) in [%s]",
@@ -125,23 +92,6 @@ async def on_message(message):
         await handle_chatty_interaction(message, cleaned_message)
         return
 
-    if re.search(r"(coffy|chatty)\s+sei\s+vivo", content):
-        responses_list = [
-            translate("alive_response_1"),
-            translate("alive_response_2"),
-            translate("alive_response_3"),
-            translate("alive_response_4"),
-            translate("alive_response_5"),
-        ]
-        response = random.choice(responses_list)
-        bot_logger.info(
-            "Alive check by %s: response='%s'",
-            message.author.display_name,
-            response,
-        )
-        await message.channel.send(f"{message.author.mention} {response}")
-        return
-
     await bot.process_commands(message)
 
 
@@ -170,13 +120,13 @@ async def load_all_cogs():
             await bot.load_extension(f"cogs.{filename[:-3]}")
 
 
-async def main():
+async def start_discord():
     """
     Entry point: Load all cogs and start the bot using the token from environment.
     """
     await load_all_cogs()
-    await bot.start(BOT_TOKEN)
+    await bot.start(DISCORD_BOT_TOKEN)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(start_discord())

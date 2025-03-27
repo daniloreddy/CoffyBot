@@ -1,3 +1,5 @@
+# cogs/chatty_admin.py
+
 import discord
 import os
 import sqlite3
@@ -6,7 +8,11 @@ from discord.ext import commands
 from discord import app_commands
 
 from utils.localization import translate
-from utils.generic import handle_errors, check_admin, is_dm_only
+from utils.generic import (
+    handle_errors,
+    require_discord_dm,
+    require_discord_admin,
+)
 from services.gemini import (
     change_model,
     get_supported_models,
@@ -15,15 +21,6 @@ from services.gemini import (
 from utils.logger import bot_logger, error_logger
 from utils.context import set_context_file, reset_context, get_server_context
 from utils.config import DB_FILE
-
-
-# --- Helper Functions ---
-async def check_admin_and_dm(interaction):
-    if not await check_admin(interaction):
-        return False
-    if not is_dm_only(interaction):
-        return False
-    return True
 
 
 class ChattyAdmin(commands.Cog):
@@ -36,9 +33,9 @@ class ChattyAdmin(commands.Cog):
     )
     @app_commands.describe(modello="Name of the new model (e.g., gemini-1.5-flash)")
     @handle_errors("chatty-admin-model")
+    @require_discord_dm()
+    @require_discord_admin()
     async def chatty_model(self, interaction: discord.Interaction, modello: str):
-        if not await check_admin_and_dm(interaction):
-            return
 
         ok = change_model(modello)
         if ok:
@@ -76,9 +73,8 @@ class ChattyAdmin(commands.Cog):
     )
     @app_commands.describe(filename="Name of the file in prompts/ (without .txt)")
     @handle_errors("chatty-admin-context")
+    @require_discord_admin()
     async def chatty_context(self, interaction: discord.Interaction, filename: str):
-        if not await check_admin(interaction):
-            return
 
         filename = filename.strip()
         if not filename:
@@ -125,10 +121,14 @@ class ChattyAdmin(commands.Cog):
         description="Reset the context file for this server (ADMIN only)",
     )
     @handle_errors("chatty-admin-context-reset")
+    @require_discord_admin()
     async def chatty_context_reset(self, interaction: discord.Interaction):
-        if not await check_admin(interaction):
-            return
+        """
+        Reset the context prompt for the current server.
 
+        Args:
+            interaction (discord.Interaction): The command interaction.
+        """
         server_name = (
             interaction.guild.name
             if interaction.guild
@@ -150,10 +150,15 @@ class ChattyAdmin(commands.Cog):
         description="\ud83d\udcca Show bot statistics  (ADMIN+DM only)",
     )
     @handle_errors("chatty-admin-stats")
+    @require_discord_dm()
+    @require_discord_admin()
     async def chatty_stats(self, interaction: discord.Interaction):
-        if not await check_admin_and_dm(interaction):
-            return
+        """
+        Show basic bot usage statistics including number of conversations and unique users.
 
+        Args:
+            interaction (discord.Interaction): The command interaction.
+        """
         server_context_info = (
             "\n".join([f"{srv}: {file}" for srv, file in get_server_context.items()])
             or "None"
@@ -181,10 +186,15 @@ class ChattyAdmin(commands.Cog):
         description="\ud83d\udcc5 Show daily message activity (last 7 days, ADMIN+DM only)",
     )
     @handle_errors("chatty-admin-activity")
+    @require_discord_dm()
+    @require_discord_admin()
     async def chatty_activity(self, interaction: discord.Interaction):
-        if not await check_admin_and_dm(interaction):
-            return
+        """
+        Show daily conversation activity over the last 7 days in graphical format.
 
+        Args:
+            interaction (discord.Interaction): The command interaction.
+        """
         if not os.path.isfile(DB_FILE):
             await interaction.response.send_message(
                 translate("db_missing_dm"), ephemeral=True
@@ -223,10 +233,15 @@ class ChattyAdmin(commands.Cog):
         description="\ud83d\udcd2\ufe0f Show last 10 conversations (ADMIN+DM only)",
     )
     @handle_errors("chatty-admin-lastlogs")
+    @require_discord_dm()
+    @require_discord_admin()
     async def chatty_lastlogs(self, interaction: discord.Interaction):
-        if not await check_admin_and_dm(interaction):
-            return
+        """
+        Show the last 10 Gemini prompts and responses for moderation or debugging.
 
+        Args:
+            interaction (discord.Interaction): The command interaction.
+        """
         if not os.path.isfile(DB_FILE):
             await interaction.response.send_message(
                 translate("db_missing_dm"), ephemeral=True
@@ -276,12 +291,17 @@ class ChattyAdmin(commands.Cog):
         description="\ud83d\udcd6 Show admin commands (ADMIN+DM only)",
     )
     @handle_errors("chatty-admin-help")
+    @require_discord_dm()
+    @require_discord_admin()
     async def chatty_help_admin(self, interaction: discord.Interaction):
-        if not await check_admin_and_dm(interaction):
-            return
+        """
+        Display a list of all available admin commands and their descriptions.
 
+        Args:
+            interaction (discord.Interaction): The command interaction.
+        """
         await interaction.response.send_message(
-            translate("admin_help_message"), ephemeral=True
+            translate("admin_help_message_discord"), ephemeral=True
         )
         bot_logger.info(
             "Admin help requested via DM by %s (ID: %s)",
@@ -294,10 +314,15 @@ class ChattyAdmin(commands.Cog):
         description="List all supported Gemini models (ADMIN+DM only)",
     )
     @handle_errors("chatty-admin-models")
+    @require_discord_dm()
+    @require_discord_admin()
     async def chatty_admin_models(self, interaction: discord.Interaction):
-        if not await check_admin_and_dm(interaction):
-            return
+        """
+        List all available Gemini models and highlight the currently active one.
 
+        Args:
+            interaction (discord.Interaction): The command interaction.
+        """
         current = get_current_model()
         model_list = "\n".join(
             [
@@ -319,10 +344,15 @@ class ChattyAdmin(commands.Cog):
         description="List all available context files (ADMIN+DM only)",
     )
     @handle_errors("chatty-admin-contexts")
+    @require_discord_dm()
+    @require_discord_admin()
     async def chatty_admin_contexts(self, interaction: discord.Interaction):
-        if not await check_admin_and_dm(interaction):
-            return
+        """
+        List all available context files in the prompts/ directory.
 
+        Args:
+            interaction (discord.Interaction): The command interaction.
+        """
         try:
             files = [f for f in os.listdir("prompts") if f.endswith(".txt")]
             file_list = "\n".join(files) if files else translate("no_context_files")

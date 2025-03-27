@@ -1,14 +1,17 @@
+# cogs/chatty.py
+
 import discord
+
 from discord.ext import commands
 from discord import app_commands
 from typing import Optional
 
-from services.gemini import get_gemini_response
 from utils.localization import translate
 from utils.db_utils import log_to_sqlite
 from utils.generic import read_file_content, handle_errors
 from utils.logger import bot_logger
 from utils.context import get_context_prompt
+from core.handler import process_text
 
 
 class ChattyGemini(commands.Cog):
@@ -68,7 +71,7 @@ class ChattyGemini(commands.Cog):
         else:
             full_prompt = final_prompt
 
-        response_text = get_gemini_response(full_prompt)
+        response_text = process_text(full_prompt)
 
         if response_text is None:
             await interaction.followup.send(translate("gemini_error"))

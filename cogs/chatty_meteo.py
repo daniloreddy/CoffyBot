@@ -1,3 +1,5 @@
+# cogs/chatty_meteo.py
+
 import discord
 
 from discord.ext import commands
@@ -5,7 +7,7 @@ from discord import app_commands
 from datetime import datetime, timedelta
 from typing import Optional
 
-from services.weather import get_weather
+from core.handler import fetch_weather
 from utils.localization import translate
 from utils.generic import handle_errors
 from utils.logger import bot_logger, error_logger
@@ -29,6 +31,14 @@ class ChattyMeteo(commands.Cog):
         citta: str,
         giorno: Optional[str] = "oggi",
     ):
+        """
+        Show the weather forecast for a specific city and day.
+
+        Args:
+            interaction (discord.Interaction): The command interaction.
+            citta (str): City name.
+            giorno (str, optional): Day of the forecast ("oggi", "domani", "dopodomani" or date).
+        """
         await interaction.response.defer()
         giorno = giorno.lower().strip()
         today = datetime.now()
@@ -69,7 +79,7 @@ class ChattyMeteo(commands.Cog):
             requested_date.date(),
         )
 
-        weather_response = await get_weather(citta, requested_date.date())
+        weather_response = await fetch_weather(citta, requested_date.date())
         await interaction.followup.send(weather_response)
 
 

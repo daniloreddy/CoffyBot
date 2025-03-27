@@ -1,8 +1,11 @@
+# cogs/chatty_wiki.py
+
 import discord
+
 from discord.ext import commands
 from discord import app_commands
 
-from services.wikipedia import search_wikipedia
+from core.handler import fetch_wikipedia
 from utils.generic import handle_errors
 from utils.logger import bot_logger
 
@@ -17,6 +20,14 @@ class ChattyWiki(commands.Cog):
     @app_commands.describe(termine="Term to search on Wikipedia")
     @handle_errors("chatty-wiki")
     async def chatty_wiki(self, interaction: discord.Interaction, termine: str):
+        """
+        Search for a term on Wikipedia and return the summary in an embed.
+
+        Args:
+            interaction (discord.Interaction): The command interaction.
+            termine (str): The term to search on Wikipedia.
+        """
+
         await interaction.response.defer()
 
         # --- Log Wikipedia Request ---
@@ -32,7 +43,7 @@ class ChattyWiki(commands.Cog):
             preview,
         )
 
-        title, description, link, image = await search_wikipedia(termine)
+        title, description, link, image = await fetch_wikipedia(termine)
 
         if title is None:
             await interaction.followup.send(description)

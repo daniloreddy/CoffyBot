@@ -1,9 +1,9 @@
+# utils/config.py
+
 import os
+import time
 
-from dotenv import load_dotenv
-
-# --- Load environment variables from .env ---
-load_dotenv()
+BOT_START_TIME = time.time()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -23,8 +23,13 @@ MAX_PDF_SIZE = 1 * 1024 * 1024  # 1 MB
 MAX_DOC_LENGTH = 5000  # Truncate long content
 
 # --- Admin Settings ---
-ADMIN_ROLES = ["Admin", "Boss", "CoffyMaster"]
-FALLBACK_ID = int(os.getenv("FALLBACK_ID", "123456789012345678"))  # Default fallback ID
+DISCORD_ADMIN_ROLES = ["Admin", "Boss", "CoffyMaster"]
+DISCORD_FALLBACK_ID = int(
+    os.getenv("DISCORD_FALLBACK_ID", "123456789012345678")
+)  # Default fallback ID
+TELEGRAM_FALLBACK_ID = os.getenv(
+    "TELEGRAM_FALLBACK_ID", "daniloreddy"
+)  # Default fallback ID
 
 # --- Logging ---
 LOG_DIR = os.path.normpath(os.path.join(BASE_DIR, "../logs"))
@@ -41,7 +46,8 @@ DB_FILE = os.path.normpath(os.path.join(BASE_DIR, "../chatty.db"))
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 # --- Hugging Face ---
 HF_MODEL_URL = (

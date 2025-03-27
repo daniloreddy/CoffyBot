@@ -1,13 +1,16 @@
+# cogs/chatty_info.py
+
 import discord
 import time
 
 from discord.ext import commands
+
 from utils.localization import translate
 from utils.generic import handle_errors
 from services.gemini import get_current_model
 from utils.logger import bot_logger
 from utils.context import get_context_prompt
-from bot import BOT_START_TIME
+from utils.config import BOT_START_TIME
 
 
 class ChattyStatus(commands.Cog):
@@ -19,6 +22,9 @@ class ChattyStatus(commands.Cog):
     )
     @handle_errors("chatty-info")
     async def chatty_info(self, interaction: discord.Interaction):
+        """
+        Display bot info including uptime, active model, and version.
+        """
         server_name = interaction.guild.name if interaction.guild else "DM"
         context_content = get_context_prompt(server_name)
         context_file = "Active" if context_content else "None"

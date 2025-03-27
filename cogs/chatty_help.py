@@ -1,3 +1,5 @@
+# cogs/chatty_help.py
+
 import discord
 
 from discord.ext import commands
@@ -12,7 +14,10 @@ class ChattyHelp(commands.Cog):
         name="chatty-help", description="Show the list of available commands"
     )
     async def chatty_help(self, interaction: discord.Interaction):
-        message_text = translate("help_message")
+        """
+        Display the list of available bot commands and descriptions.
+        """
+        message_text = translate("help_message_discord")
         await interaction.response.send_message(message_text, ephemeral=True)
 
 

@@ -1,108 +1,144 @@
-Ecco il sorgente Markdown del tuo README, pronto da copiare o salvare:
+# Coffy Bot (Discord + Telegram)
 
-# Coffy Discord Bot
-
-**Coffy** is a private Discord bot powered by Google Gemini models. It can generate AI responses, images, and audio, fetch weather data, search Wikipedia, and includes advanced admin commands for server customization and monitoring.
+**Coffy** is a private multi-platform bot powered by Google Gemini.  
+It supports both **Discord** and **Telegram**, offering AI-powered chat, Wikipedia search, weather forecast, TTS audio, and powerful admin tools for context management, logs and stats.
 
 ---
 
 ## 🚀 Features
 
-- 🤖 Chat with Google Gemini (via `/chatty`)
-- 🖼️ Generate images using Stable Diffusion (Hugging Face API)
-- 🔊 Text-to-Speech audio generation (Google TTS)
-- ☁️ Weather forecast from OpenWeather
+- 🤖 Chat with Google Gemini (`/chatty`)
+- 🌍 Weather forecast from OpenWeather
 - 📚 Wikipedia search
-- 🛠️ Admin commands via DM (model switch, logs, context management)
+- 🔊 Text-to-Speech audio (Google TTS)
+- 🔒 Localized command restriction (e.g. DM-only, admin-only)
+- 🛠️ Advanced admin commands (context, models, stats, logs)
+
+> ❌ **Image generation** has been removed due to quality and reliability issues.
 
 ---
 
-## 📂 Project Structure
+## 📦 Project Structure
 
 ```
-/bot.py                 # Main bot script
-/utils/                 # Configuration, logging, context, helpers
-/services/              # API integrations (Gemini, TTS, Weather, etc.)
-/cogs/                  # Discord command modules (COGs)
-/tools/                 # Utility tools (key checker, DB helper)
+/bot_launcher.py        # Main launcher (runs Discord, Telegram or both)
+/bot_discord.py         # Discord bot entry point
+/bot_telegram.py        # Telegram bot entry point
+
+/cogs/                  # Discord command modules (slash commands)
+/telegram_commands/     # Telegram command modules
+
+/utils/                 # Config, logging, localization, context utils
+/services/              # External API integrations (Gemini, TTS, etc.)
+/core/                  # Central logic handler
+
+/tools/                 # Extra utilities (DB checker, translation keys)
+/lang/                  # Localized strings (e.g., en.json, it.json)
+/logs/                  # Logs for bot, services, errors
+/prompts/               # Custom context files
 ```
 
 ---
 
 ## ⚙️ Setup Guide
 
-1. Create a `.env` file in the root directory with your API keys and settings:
+1. Create a `.env` file in the root directory with your API keys:
 ```
-BOT_TOKEN=your_discord_bot_token
+DISCORD_BOT_TOKEN=your_discord_bot_token
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 GEMINI_API_KEY=your_google_gemini_api_key
 OPENWEATHER_API_KEY=your_openweather_api_key
-HUGGINGFACE_API_KEY=your_huggingface_api_key
-FALLBACK_ID=your_discord_user_id
+
+DISCORD_FALLBACK_ID=your_discord_user_id
+TELEGRAM_FALLBACK_ID=your_telegram_username
 ```
 
-2. Create and activate a virtual environment (recommended):
+2. Create and activate the virtual environment:
 ```bash
 python -m venv coffy-env
 source coffy-env/bin/activate  # On Windows: coffy-env\Scripts\activate
 ```
 
-3. Install dependencies:
+3. Install the required dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Run the bot:
+4. Launch the bot(s) using the unified launcher:
 ```bash
-python bot.py
+python bot_launcher.py discord         # Start Discord bot only
+python bot_launcher.py telegram        # Start Telegram bot only
+python bot_launcher.py discord telegram  # Start both
 ```
 
 ---
 
 ## 🌐 Localization
 
-All user-facing messages are localized via JSON files in the `/lang/` directory.  
-Use `tools/key_verification_tool.py` to detect unused or missing translation keys.
+All bot messages are fully localized using JSON language files in `/lang/`.  
+Languages supported: **English (en)** and **Italian (it)**.  
+Add new languages via additional files like `fr.json`, `de.json`, etc.
 
-Default language: **English**  
-Languages can be added via additional JSON files: `en.json`, `it.json`, etc.
-
----
-
-## 📊 Logs
-
-Log files are saved in the `/logs/` directory:
-- `bot.log` ➔ General events and commands
-- `services.log` ➔ External API calls
-- `errors.log` ➔ Errors and exceptions
+Use:
+```bash
+python tools/key_verification_tool.py
+```
+to check for missing or unused keys.
 
 ---
 
-## 🧹 Context System
+## 📊 Logging
 
-Each server can have a **custom AI context** stored in `/prompts/`.  
-Admins can assign these contexts using the `/chatty-admin-context` command.
+Log files are saved in the `/logs/` folder:
 
-Context file format: plain `.txt`, content is prepended to each AI prompt.
+- `bot.log` → Events and commands
+- `services.log` → External API usage
+- `errors.log` → Errors and exceptions
 
----
-
-## 🛠️ Admin Features
-
-Available via private messages (DM) only:
-- Switch Gemini model
-- View last conversations
-- Activity stats (last 7 days)
-- View/set/reset server context
-- List supported models and context files
-
-Admin access is role-based (`Admin`, `Boss`, `CoffyMaster`) or by fallback ID.
+Each log is timestamped and auto-rotated.
 
 ---
 
-## 🧠 Memory Note
+## 🧠 Context System
 
-Coffy does **not store conversation history**.  
-Each interaction is processed independently, using only context (if set).
+Each Discord server or Telegram group can define a custom **context prompt** stored in `/prompts/`.  
+It will be prepended to every user query sent to Gemini.
+
+Admins can set or reset contexts using:
+- `/chatty-admin-context`
+- `/chatty-admin-context-reset`
+
+---
+
+## 🛠️ Admin Commands
+
+Commands available via **DM only** (Telegram: by fallback username):
+
+- `/chatty-admin-model` ➜ Switch Gemini model
+- `/chatty-admin-models` ➜ List available models
+- `/chatty-admin-context` ➜ Set server context
+- `/chatty-admin-context-reset` ➜ Reset server context
+- `/chatty-admin-contexts` ➜ List available contexts
+- `/chatty-admin-stats` ➜ Show usage statistics
+- `/chatty-admin-activity` ➜ Daily usage stats
+- `/chatty-admin-lastlogs` ➜ Show last 10 prompts
+- `/chatty-admin-help` ➜ Show help for admin commands
+
+---
+
+## 🤖 Telegram Command Mapping
+
+Telegram does not support dashes (`-`) in command names, so all Discord commands are mapped with underscores (`_`):
+
+| Discord Command        | Telegram Command          |
+|------------------------|---------------------------|
+| `/chatty`              | `/chatty`                |
+| `/chatty-help`         | `/chatty_help`           |
+| `/chatty-info`         | `/chatty_info`           |
+| `/chatty-meteo`        | `/chatty_meteo`          |
+| `/chatty-tts`          | `/chatty_tts`            |
+| `/chatty-wiki`         | `/chatty_wiki`           |
+| `/chatty-admin-*`      | `/chatty_admin_*`        |
 
 ---
 

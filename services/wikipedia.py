@@ -1,3 +1,5 @@
+# services/wikipedia.py
+
 import aiohttp
 from utils.localization import translate
 from utils.logger import service_logger, error_logger

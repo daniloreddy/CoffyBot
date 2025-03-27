@@ -1,11 +1,14 @@
+# cogs/chatty_tts.py
+
 import discord
+
 from discord.ext import commands
 from discord import app_commands
 
-from services.google_tts import generate_tts_audio
 from utils.localization import translate
 from utils.generic import handle_errors, safe_delete
 from utils.logger import bot_logger, error_logger
+from core.handler import process_tts
 
 
 class ChattyTTS(commands.Cog):
@@ -18,6 +21,13 @@ class ChattyTTS(commands.Cog):
     @app_commands.describe(testo="Text to convert to audio")
     @handle_errors("chatty-tts")
     async def chatty_tts(self, interaction: discord.Interaction, testo: str):
+        """
+        Generate a TTS audio response from the provided text.
+
+        Args:
+            interaction (discord.Interaction): The command interaction.
+            testo (str): Text to convert to audio.
+        """
         if not testo.strip():
             await interaction.response.send_message(
                 translate("tts_no_text"), ephemeral=True
@@ -39,7 +49,7 @@ class ChattyTTS(commands.Cog):
             preview,
         )
 
-        audio_file = generate_tts_audio(testo)
+        audio_file = process_tts(testo)
         if audio_file:
             bot_logger.info(
                 "TTS audio generated successfully for %s", interaction.user.display_name
