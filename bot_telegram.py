@@ -65,8 +65,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(translate("generic_no_text"))
         return
 
-    if chat.type != "private" and not text.lower().startswith(("chatty", "coffy")):
-        return
+    # Respond always in private chats (DMs)
+    # In group chats, only respond if the message starts with "chatty" or "coffy"
+    if chat.type != "private":
+        lowered = text.lower()
+        if lowered.startswith("chatty"):
+            # Remove "chatty" prefix and clean up leading punctuation
+            text = text[6:].lstrip(" ,:")
+        elif lowered.startswith("coffy"):
+            # Remove "coffy" prefix and clean up leading punctuation
+            text = text[5:].lstrip(" ,:")
+        else:
+            return  # Ignore messages that don't start with "chatty" or "coffy"
 
     server_name = resolve_server_name(user, chat)
     context_prompt = get_context_prompt(server_name)
