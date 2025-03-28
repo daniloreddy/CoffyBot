@@ -65,6 +65,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(translate("generic_no_text"))
         return
 
+    if chat.type != "private" and not text.lower().startswith(("chatty", "coffy")):
+        return
+
     server_name = resolve_server_name(user, chat)
     context_prompt = get_context_prompt(server_name)
     response = process_text(text, context_prompt)
