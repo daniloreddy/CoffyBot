@@ -20,7 +20,7 @@ class ChattyTTS(commands.Cog):
     )
     @app_commands.describe(testo="Text to convert to audio")
     @handle_errors("chatty-tts")
-    async def chatty_tts(self, interaction: Interaction, testo: str):
+    async def chatty_tts(self, interaction, testo: str):
         """
         Generate a TTS audio response from the provided text.
 

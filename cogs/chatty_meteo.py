@@ -27,7 +27,7 @@ class ChattyMeteo(commands.Cog):
     @handle_errors("chatty-meteo")
     async def weather_command(
         self,
-        interaction: Interaction,
+        interaction,
         citta: str,
         giorno: Optional[str] = "oggi",
     ):

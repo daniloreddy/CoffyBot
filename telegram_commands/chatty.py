@@ -89,6 +89,6 @@ async def chatty(update, context):
 def register(app):
     app.add_handler(
         MessageHandler(
-            filters.Document.ALL | filters.TEXT & filters.Command(BOT_COMMAND), chatty
+            filters.Document.ALL | (filters.TEXT & filters.Command(BOT_COMMAND)), chatty
         )
     )

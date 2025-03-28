@@ -28,7 +28,7 @@ class ChattyGemini(commands.Cog):
     @handle_errors("chatty")
     async def chatty(
         self,
-        interaction: Interaction,
+        interaction,
         prompt: str,
         allegato: Optional[discord.Attachment] = None,
     ):

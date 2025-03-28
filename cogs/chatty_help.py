@@ -14,7 +14,7 @@ class ChattyHelp(commands.Cog):
     @discord.app_commands.command(
         name="chatty-help", description="Show the list of available commands"
     )
-    async def chatty_help(self, interaction: Interaction):
+    async def chatty_help(self, interaction):
         """
         Display the list of available bot commands and descriptions.
         """

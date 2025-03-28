@@ -10,15 +10,12 @@ from utils.context import set_context_file, reset_context, get_server_context
 from services.gemini import get_supported_models, get_current_model, change_model
 from utils.config import PROMPT_DIR, DB_FILE
 from utils.logger import bot_logger, error_logger
-from utils.generic import (
-    require_telegram_dm,
-    require_telegram_admin,
-    resolve_server_name,
-)
+from utils.generic import resolve_server_name, check_telegram_admin, check_telegram_dm
 
 
 # --- CONTEXT: Set ---
-@require_telegram_admin()
+
+
 async def chatty_admin_context(update, context):
     """
     Reset the context prompt associated with the current Telegram group or user.
@@ -27,6 +24,8 @@ async def chatty_admin_context(update, context):
         update (Update): Telegram update object.
         context (ContextTypes.DEFAULT_TYPE): Context from the handler.
     """
+    if not await check_telegram_admin(update):
+        return
     if not context.args:
         await update.message.reply_text(translate("invalid_context_file"))
         return
@@ -48,7 +47,6 @@ async def chatty_admin_context(update, context):
 
 
 # --- CONTEXT: Reset ---
-@require_telegram_admin()
 async def chatty_admin_context_reset(update, context):
     """
     Reset the context prompt for the current Telegram group or user.
@@ -57,6 +55,8 @@ async def chatty_admin_context_reset(update, context):
         update (Update): Telegram update object.
         context (ContextTypes.DEFAULT_TYPE): Context from the handler.
     """
+    if not await check_telegram_admin(update):
+        return
     user = update.effective_user
     chat = update.effective_chat
     server_name = resolve_server_name(user, chat)
@@ -66,7 +66,6 @@ async def chatty_admin_context_reset(update, context):
 
 
 # --- CONTEXT: List files ---
-@require_telegram_admin()
 async def chatty_admin_contexts(update, context):
     """
     List all available context files from the prompts/ directory.
@@ -75,6 +74,8 @@ async def chatty_admin_contexts(update, context):
         update (Update): Telegram update object.
         context (ContextTypes.DEFAULT_TYPE): Context from the handler.
     """
+    if not await check_telegram_admin(update):
+        return
     try:
         files = [f for f in os.listdir(PROMPT_DIR) if f.endswith(".txt")]
         if files:
@@ -89,8 +90,6 @@ async def chatty_admin_contexts(update, context):
 
 
 # --- MODELS: List ---
-@require_telegram_dm
-@require_telegram_admin()
 async def chatty_admin_models(update, context):
     """
     List all available Gemini models and highlight the currently selected one.
@@ -99,6 +98,10 @@ async def chatty_admin_models(update, context):
         update (Update): Telegram update object.
         context (ContextTypes.DEFAULT_TYPE): Context from the handler.
     """
+    if not await check_telegram_dm(update):
+        return
+    if not await check_telegram_admin(update):
+        return
     current = get_current_model()
     supported = get_supported_models()
     model_list = "\n".join(
@@ -109,8 +112,6 @@ async def chatty_admin_models(update, context):
 
 
 # --- MODELS: Switch ---
-@require_telegram_dm
-@require_telegram_admin()
 async def chatty_admin_model(update, context):
     """
     Change the active Gemini model used by the bot.
@@ -119,6 +120,10 @@ async def chatty_admin_model(update, context):
         update (Update): Telegram update object containing the model name.
         context (ContextTypes.DEFAULT_TYPE): Context from the handler.
     """
+    if not await check_telegram_dm(update):
+        return
+    if not await check_telegram_admin(update):
+        return
     if not context.args:
         await update.message.reply_text(translate("invalid_model"))
         return
@@ -141,8 +146,6 @@ async def chatty_admin_model(update, context):
 
 
 # --- STATS ---
-@require_telegram_dm
-@require_telegram_admin()
 async def chatty_admin_stats(update, context):
     """
     Show basic statistics including total prompts and unique users.
@@ -151,6 +154,10 @@ async def chatty_admin_stats(update, context):
         update (Update): Telegram update object.
         context (ContextTypes.DEFAULT_TYPE): Context from the handler.
     """
+    if not await check_telegram_dm(update):
+        return
+    if not await check_telegram_admin(update):
+        return
     ctx = get_server_context()
     model = get_current_model()
 
@@ -162,8 +169,6 @@ async def chatty_admin_stats(update, context):
 
 
 # --- ACTIVITY (last 7 days) ---
-@require_telegram_dm
-@require_telegram_admin()
 async def chatty_admin_activity(update, context):
     """
     Display daily prompt activity for the last 7 days.
@@ -172,6 +177,10 @@ async def chatty_admin_activity(update, context):
         update (Update): Telegram update object.
         context (ContextTypes.DEFAULT_TYPE): Context from the handler.
     """
+    if not await check_telegram_dm(update):
+        return
+    if not await check_telegram_admin(update):
+        return
     if not os.path.isfile(DB_FILE):
         await update.message.reply_text(translate("db_missing_dm"))
         return
@@ -204,8 +213,6 @@ async def chatty_admin_activity(update, context):
 
 
 # --- LASTLOGS ---
-@require_telegram_dm
-@require_telegram_admin()
 async def chatty_admin_lastlogs(update, context):
     """
     Show the last 10 recorded conversations from the SQLite database.
@@ -214,6 +221,10 @@ async def chatty_admin_lastlogs(update, context):
         update (Update): Telegram update object.
         context (ContextTypes.DEFAULT_TYPE): Context from the handler.
     """
+    if not await check_telegram_dm(update):
+        return
+    if not await check_telegram_admin(update):
+        return
     if not os.path.isfile(DB_FILE):
         await update.message.reply_text(translate("db_missing_dm"))
         return
@@ -247,8 +258,6 @@ async def chatty_admin_lastlogs(update, context):
     await update.message.reply_text(logs[:4096])  # Telegram max message size
 
 
-@require_telegram_dm
-@require_telegram_admin()
 async def chatty_admin_help(update, context):
     """
     Display a list of all available administrative commands with descriptions.
@@ -257,6 +266,10 @@ async def chatty_admin_help(update, context):
         update (Update): Telegram update object.
         context (ContextTypes.DEFAULT_TYPE): Context from the handler.
     """
+    if not await check_telegram_dm(update):
+        return
+    if not await check_telegram_admin(update):
+        return
     bot_logger.info("Admin help invoked by %s", update.effective_user.full_name)
     await update.message.reply_text(translate("admin_help_message_telegram"))
 

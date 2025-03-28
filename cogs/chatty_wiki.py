@@ -19,7 +19,7 @@ class ChattyWiki(commands.Cog):
     )
     @app_commands.describe(termine="Term to search on Wikipedia")
     @handle_errors("chatty-wiki")
-    async def chatty_wiki(self, interaction: Interaction, termine: str):
+    async def chatty_wiki(self, interaction, termine: str):
         """
         Search for a term on Wikipedia and return the summary in an embed.
 

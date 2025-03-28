@@ -44,7 +44,7 @@ async def chatty_tts(update, context):
                 audio_input = InputFile(f, filename="tts.mp3")
                 await update.message.reply_audio(audio=audio_input)
 
-            safe_delete(audio_file)  # Uncomment if you want cleanup
+            safe_delete(audio_file)
             bot_logger.info("TTS sent successfully for: %s", text)
         except Exception as e:
             error_logger.error("Telegram failed to send TTS: %s", str(e))

@@ -3,7 +3,9 @@
 import discord
 import time
 
-from discord.ext import commands, Interaction
+from discord import Interaction
+from discord.ext import commands
+
 
 from utils.localization import translate
 from utils.generic import handle_errors
@@ -21,7 +23,7 @@ class ChattyStatus(commands.Cog):
         name="chatty-info", description="Show info about the bot"
     )
     @handle_errors("chatty-info")
-    async def chatty_info(self, interaction: Interaction):
+    async def chatty_info(self, interaction):
         """
         Display bot info including uptime, active model, and version.
         """

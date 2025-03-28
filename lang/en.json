@@ -4,6 +4,7 @@
   "admin_only_command": "⛔ Only admin can use this command.",
   "wiki_no_entry": "❌ No entry found.",
   "wiki_error": "❌ Wikipedia error: {error}",
+  "wiki_usage": "❓ Please provide a search term. Example:\n/chatty_wiki Leonardo da Vinci",
   "weather_city_not_found": "❌ City not found or API error.",
   "weather_no_forecast": "⚠️ No forecast found for {date}.",
   "weather_error": "❌ Weather error: {error}",

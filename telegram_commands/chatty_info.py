@@ -6,6 +6,8 @@ from telegram.ext import CommandHandler
 
 from utils.localization import translate
 from utils.logger import bot_logger
+from utils.context import get_context_prompt
+from utils.generic import resolve_server_name
 from services.gemini import get_current_model
 from utils.config import BOT_START_TIME
 
@@ -27,7 +29,8 @@ async def chatty_info(update, context):
     else:
         uptime_str = f"{hours}h {minutes}m {seconds}s"
 
-    context_file = "Active" if context.chat_data.get("context") else "None"
+    server_name = resolve_server_name(update.effective_user, update.effective_chat)
+    context_file = "Active" if get_context_prompt(server_name) else "None"
 
     msg = translate(
         "info_message",

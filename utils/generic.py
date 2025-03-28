@@ -28,74 +28,73 @@ from utils.config import (
 )
 
 
-def require_discord_admin():
+async def check_discord_admin(interaction) -> bool:
     """
-    Decorator for Discord commands: allows only the owner (FALLBACK_ID) to use the command.
+    Check if the user invoking the command is the Discord fallback admin.
+
+    Args:
+        interaction: The Discord interaction object.
+
+    Returns:
+        bool: True if admin, False otherwise (also sends error message).
     """
-
-    def decorator(func):
-        async def wrapper(self, interaction: Interaction, *args, **kwargs):
-            if interaction.user.id != DISCORD_FALLBACK_ID:
-                await interaction.response.send_message(
-                    translate("admin_only_command"), ephemeral=True
-                )
-                return
-            return await func(self, interaction, *args, **kwargs)
-
-        return wrapper
-
-    return decorator
+    if interaction.user.id != DISCORD_FALLBACK_ID:
+        await interaction.response.send_message(
+            translate("admin_only_command"), ephemeral=True
+        )
+        return False
+    return True
 
 
-def require_discord_dm():
+async def check_discord_dm(interaction) -> bool:
     """
-    Decorator for Discord commands: allows usage only in private messages (DM).
+    Check if the command is used in a direct message (DM).
+
+    Args:
+        interaction: The Discord interaction object.
+
+    Returns:
+        bool: True if DM, False otherwise (also sends error message).
     """
-
-    def decorator(func):
-        async def wrapper(self, interaction: Interaction, *args, **kwargs):
-            if interaction.guild is not None:
-                await interaction.response.send_message(
-                    translate("private_only"), ephemeral=True
-                )
-                return
-            return await func(self, interaction, *args, **kwargs)
-
-        return wrapper
-
-    return decorator
+    if interaction.guild is not None:
+        await interaction.response.send_message(
+            translate("private_only"), ephemeral=True
+        )
+        return False
+    return True
 
 
-def require_telegram_admin():
+async def check_telegram_admin(update: Update) -> bool:
     """
-    Decorator for Telegram commands: allows only the bot creator (via username).
+    Check if the user is the Telegram fallback admin.
+
+    Args:
+        update (Update): Telegram update object.
+
+    Returns:
+        bool: True if admin, False otherwise (and sends error message).
     """
-
-    def decorator(func):
-        async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-            username = update.effective_user.username
-            if username != TELEGRAM_FALLBACK_ID:
-                await update.message.reply_text(translate("admin_only_command"))
-                return
-            return await func(update, context)
-
-        return wrapper
-
-    return decorator
+    username = update.effective_user.username
+    if username != TELEGRAM_FALLBACK_ID:
+        await update.message.reply_text(translate("admin_only_command"))
+        return False
+    return True
 
 
-def require_telegram_dm(func):
+async def check_telegram_dm(update: Update) -> bool:
     """
-    Decorator to ensure command is only used in private messages.
+    Check if the command is used in a private Telegram chat.
+
+    Args:
+        update (Update): Telegram update object.
+
+    Returns:
+        bool: True if DM, False otherwise (and sends error message).
     """
-
-    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        if update.effective_chat.type != "private":
-            await update.message.reply_text(translate("private_only"))
-            return
-        return await func(update, context)
-
-    return wrapper
+    if update.effective_chat.type != "private":
+        await update.message.reply_text(translate("private_only"))
+        return False
+    return True
 
 
 def resolve_server_name(user: User, chat: Chat) -> str:
@@ -173,7 +172,7 @@ def handle_errors(command_name: str):
 
     def decorator(func):
         @functools.wraps(func)
-        async def wrapper(interaction: Interaction, *args, **kwargs):
+        async def wrapper(interaction, *args, **kwargs):
             try:
                 await func(interaction, *args, **kwargs)
             except Exception as e:
@@ -220,7 +219,7 @@ async def check_admin(interaction, fallback_id: int = DISCORD_FALLBACK_ID) -> bo
     return False
 
 
-def is_dm_only(interaction: Interaction) -> bool:
+def is_dm_only(interaction) -> bool:
     """
     Check if a command is used in direct messages.
 
