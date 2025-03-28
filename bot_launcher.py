@@ -11,7 +11,6 @@ import asyncio
 
 from bot_discord import start_discord
 from bot_telegram import start_telegram
-from utils.config import loadenv
 from utils.localization import detect_system_language, load_language
 
 
@@ -24,6 +23,7 @@ async def main():
     """
     Launch one or both bots depending on command-line arguments.
     """
+
     selected = parse_args()
 
     tasks = []
@@ -40,6 +40,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    loadenv()
     load_language(detect_system_language())
     asyncio.run(main())

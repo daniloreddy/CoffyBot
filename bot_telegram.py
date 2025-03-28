@@ -18,7 +18,6 @@ from telegram.ext import (
 )
 
 from utils.localization import detect_system_language, load_language
-from utils.config import loadenv
 from utils.generic import resolve_server_name
 from utils.logger import bot_logger
 from core.handler import process_text
@@ -115,6 +114,5 @@ async def start_telegram():
 
 
 if __name__ == "__main__":
-    loadenv()
     load_language(detect_system_language())
     asyncio.run(start_telegram())

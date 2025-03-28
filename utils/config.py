@@ -5,6 +5,8 @@ import time
 
 from dotenv import load_dotenv
 
+load_dotenv()
+
 BOT_START_TIME = time.time()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -75,7 +77,3 @@ WEATHER_EMOJIS = {
 
 # --- TTS ---
 DEFAULT_TTS_LANG = "it"
-
-
-def loadenv():
-    load_dotenv()

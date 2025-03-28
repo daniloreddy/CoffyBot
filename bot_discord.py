@@ -5,7 +5,7 @@ import re
 
 from discord.ext import commands
 
-from utils.config import loadenv
+
 from utils.config import DISCORD_BOT_TOKEN
 from utils.localization import translate
 from utils.logger import bot_logger, error_logger
@@ -129,6 +129,5 @@ async def start_discord():
 
 
 if __name__ == "__main__":
-    loadenv()
     load_language(detect_system_language())
     asyncio.run(start_discord())
