@@ -5,13 +5,13 @@ import re
 
 from discord.ext import commands
 
+from utils.config import loadenv
 from utils.config import DISCORD_BOT_TOKEN
 from utils.localization import translate
 from utils.logger import bot_logger, error_logger
 from services.gemini import get_gemini_response, get_current_model
 from utils.context import get_context_prompt
-from utils.generic import check_admin
-
+from utils.localization import detect_system_language, load_language
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -129,4 +129,6 @@ async def start_discord():
 
 
 if __name__ == "__main__":
+    loadenv()
+    load_language(detect_system_language())
     asyncio.run(start_discord())

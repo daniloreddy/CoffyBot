@@ -16,10 +16,10 @@ from telegram.ext import (
     filters,
     ContextTypes,
 )
-from dotenv import load_dotenv
 
-from utils.generic import resolve_server_name
 from utils.localization import detect_system_language, load_language
+from utils.config import loadenv
+from utils.generic import resolve_server_name
 from utils.logger import bot_logger
 from core.handler import process_text
 from utils.context import get_context_prompt
@@ -115,7 +115,6 @@ async def start_telegram():
 
 
 if __name__ == "__main__":
-    # --- Load environment variables from .env ---
-    load_dotenv()
+    loadenv()
     load_language(detect_system_language())
     asyncio.run(start_telegram())
