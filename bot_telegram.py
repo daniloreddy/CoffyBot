@@ -65,6 +65,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(translate("generic_no_text"))
         return
 
+    # Check if user is replying to the bot
+    is_reply_to_bot = (
+        update.message.reply_to_message is not None
+        and update.message.reply_to_message.from_user.id == context.bot.id
+    )
+
     # Respond always in private chats (DMs)
     # In group chats, only respond if the message starts with "chatty" or "coffy"
     if chat.type != "private":
@@ -75,6 +81,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif lowered.startswith("coffy"):
             # Remove "coffy" prefix and clean up leading punctuation
             text = text[5:].lstrip(" ,:")
+        elif is_reply_to_bot:
+            pass  # allow reply without cleaning
         else:
             return  # Ignore messages that don't start with "chatty" or "coffy"
 

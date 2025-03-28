@@ -54,8 +54,16 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    content = message.content.lower()
+    content = message.content.lower().strip()
 
+    # Check if message is a reply to a previous bot message
+    is_reply_to_bot = (
+        message.reference is not None
+        and isinstance(message.reference.resolved, discord.Message)
+        and message.reference.resolved.author == bot.user
+    )
+
+    # If the bot is mentioned directly
     if bot.user in message.mentions:
         bot_logger.info(
             "Bot mentioned by %s (ID: %s) in [%s]",
@@ -74,6 +82,7 @@ async def on_message(message):
         await handle_chatty_interaction(message, cleaned_message)
         return
 
+    # If message starts with "chatty" or "coffy"
     if content.startswith(("chatty", "coffy")):
         bot_logger.info(
             "Text trigger by %s (ID: %s) in [%s]",
@@ -92,6 +101,18 @@ async def on_message(message):
         await handle_chatty_interaction(message, cleaned_message)
         return
 
+    # If the user is replying to a message sent by the bot
+    if is_reply_to_bot:
+        bot_logger.info(
+            "Reply to bot by %s (ID: %s) in [%s]",
+            message.author.display_name,
+            message.author.id,
+            message.channel.name,
+        )
+        await handle_chatty_interaction(message, message.content.strip())
+        return
+
+    # Let other commands (slash etc.) be processed
     await bot.process_commands(message)
 
 
