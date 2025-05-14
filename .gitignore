@@ -1,7 +1,7 @@
 *.db
 .env
 *.log
-logs/*.log
+logs/*.log*
 coffy-env/
 __pycache__/
 config/context.json
